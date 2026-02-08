@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ממשק מנהלים - מאיר פנים</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c1810 0%, #8B1538 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header {
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 { font-size: 32px; margin-bottom: 10px; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .icon { font-size: 40px; margin-bottom: 15px; }
+        .stat-card h3 { color: #666; font-size: 14px; margin-bottom: 10px; }
+        .stat-card .number {
+            font-size: 42px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .panel h2 {
+            color: #8B1538;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .progress-bar {
+            height: 25px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8B1538 0%, #E4032E 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: right;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .alert-box {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px;">
+                <div style="width: 60px; height: 60px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                    <svg width="54" height="54" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="47" fill="#C1272D"/>
+                        <circle cx="50" cy="50" r="47" fill="none" stroke="url(#adminGrad)" stroke-width="4"/>
+                        <defs>
+                            <linearGradient id="adminGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FFA500;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#FF1493;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#9333EA;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M 28 46 L 50 26 L 72 46 L 72 41 L 50 21 L 28 41 Z" fill="white"/>
+                        <g transform="translate(35, 41)">
+                            <circle cx="5" cy="5" r="3.5" fill="white"/>
+                            <path d="M 2 12 Q 2 9, 5 9 Q 8 9, 8 12 L 8 16 L 2 16 Z" fill="white"/>
+                        </g>
+                        <g transform="translate(55, 41)">
+                            <circle cx="5" cy="5" r="3.5" fill="white"/>
+                            <path d="M 2 12 Q 2 9, 5 9 Q 8 9, 8 12 L 8 16 L 2 16 Z" fill="white"/>
+                        </g>
+                        <text x="50" y="70" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">מאיר</text>
+                        <text x="50" y="85" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">פנים</text>
+                    </svg>
+                </div>
+                <h1 style="margin: 0;">📊 לוח בקרה מנהלים</h1>
+            </div>
+            <p>בית תמחוי מאיר פנים - מערכת ניהול חבילות פסח</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="icon">👨‍👩‍👧‍👦</div>
+                <h3>סך הכל משפחות</h3>
+                <div class="number" id="totalFamilies">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">📦</div>
+                <h3>חבילות שחולקו</h3>
+                <div class="number" id="distributedPackages">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">⏳</div>
+                <h3>ממתינים לחלוקה</h3>
+                <div class="number" id="pendingPackages">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">👥</div>
+                <h3>סך נפשות</h3>
+                <div class="number" id="totalPeople">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">📈</div>
+                <h3>אחוז השלמה</h3>
+                <div class="number" id="completionRate">0%</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">📅</div>
+                <h3>ימים עד הפסח</h3>
+                <div class="number" id="daysUntilPesach">-</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>📊 סטטיסטיקות וניתוח</h2>
+            
+            <div class="alert-box alert-info">
+                <strong>💡 עדכון:</strong> המערכת עובדת במצב תקין. כל הנתונים מסונכרנים מ-Firebase.
+            </div>
+
+            <h3 style="margin-top: 20px; color: #666;">התקדמות חלוקת חבילות</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%">0%</div>
+            </div>
+
+            <h3 style="margin-top: 30px; color: #666;">פילוח לפי גודל משפחה</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>גודל משפחה</th>
+                        <th>מספר משפחות</th>
+                        <th>סך נפשות</th>
+                    </tr>
+                </thead>
+                <tbody id="familySizeBreakdown"></tbody>
+            </table>
+
+            <h3 style="margin-top: 30px; color: #666;">פילוח לפי ערים</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>עיר</th>
+                        <th>מספר משפחות</th>
+                        <th>חולק</th>
+                        <th>ממתין</th>
+                    </tr>
+                </thead>
+                <tbody id="cityBreakdown"></tbody>
+            </table>
+
+            <div style="margin-top: 30px;">
+                <button class="action-btn primary" onclick="exportAllData()">
+                    📥 ייצא דוח מלא
+                </button>
+                <button class="action-btn primary" onclick="window.open('registration-firebase.html', '_blank')">
+                    ➕ הוסף משפחה חדשה
+                </button>
+                <button class="action-btn primary" onclick="window.open('volunteer-firebase.html', '_blank')">
+                    📷 פתח ממשק מתנדבים
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmaAzUatTV97LwL4VoVEUrJoVpnF612ig",
+            authDomain: "meir-panim-f27c4.firebaseapp.com",
+            projectId: "meir-panim-f27c4",
+            storageBucket: "meir-panim-f27c4.firebasestorage.app",
+            messagingSenderId: "252083260218",
+            appId: "1:252083260218:web:ea5e1e072aed819b8d1e03"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function updateDashboard() {
+            try {
+                const querySnapshot = await getDocs(collection(db, 'registrations'));
+                const registrations = [];
+                
+                querySnapshot.forEach((doc) => {
+                    registrations.push(doc.data());
+                });
+
+                const total = registrations.length;
+                const distributed = registrations.filter(r => r.packageReceived).length;
+                const pending = total - distributed;
+                const totalPeople = registrations.reduce((sum, r) => {
+                    const size = parseInt(r.familySize) || 0;
+                    return sum + size;
+                }, 0);
+                const completionRate = total > 0 ? Math.round((distributed / total) * 100) : 0;
+
+                // Calculate days until Pesach (April 12, 2025)
+                const pesachDate = new Date('2025-04-12');
+                const today = new Date();
+                const daysUntil = Math.ceil((pesachDate - today) / (1000 * 60 * 60 * 24));
+
+                // Update display
+                document.getElementById('totalFamilies').textContent = total;
+                document.getElementById('distributedPackages').textContent = distributed;
+                document.getElementById('pendingPackages').textContent = pending;
+                document.getElementById('totalPeople').textContent = totalPeople;
+                document.getElementById('completionRate').textContent = completionRate + '%';
+                document.getElementById('daysUntilPesach').textContent = daysUntil > 0 ? daysUntil : 'עבר';
+
+                // Update progress bar
+                const progressBar = document.getElementById('progressBar');
+                progressBar.style.width = completionRate + '%';
+                progressBar.textContent = completionRate + '%';
+
+                // Family size breakdown
+                const sizeBreakdown = {};
+                registrations.forEach(r => {
+                    const size = r.familySize;
+                    if (!sizeBreakdown[size]) {
+                        sizeBreakdown[size] = { count: 0, people: 0 };
+                    }
+                    sizeBreakdown[size].count++;
+                    sizeBreakdown[size].people += parseInt(size) || 0;
+                });
+
+                let sizeHtml = '';
+                Object.keys(sizeBreakdown).sort().forEach(size => {
+                    sizeHtml += `
+                        <tr>
+                            <td>${size} נפשות</td>
+                            <td>${sizeBreakdown[size].count}</td>
+                            <td>${sizeBreakdown[size].people}</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('familySizeBreakdown').innerHTML = sizeHtml || '<tr><td colspan="3" style="text-align: center;">אין נתונים</td></tr>';
+
+                // City breakdown
+                const cityBreakdown = {};
+                registrations.forEach(r => {
+                    const city = r.city;
+                    if (!cityBreakdown[city]) {
+                        cityBreakdown[city] = { total: 0, distributed: 0, pending: 0 };
+                    }
+                    cityBreakdown[city].total++;
+                    if (r.packageReceived) {
+                        cityBreakdown[city].distributed++;
+                    } else {
+                        cityBreakdown[city].pending++;
+                    }
+                });
+
+                let cityHtml = '';
+                Object.keys(cityBreakdown).sort().forEach(city => {
+                    cityHtml += `
+                        <tr>
+                            <td>${city}</td>
+                            <td>${cityBreakdown[city].total}</td>
+                            <td>${cityBreakdown[city].distributed}</td>
+                            <td>${cityBreakdown[city].pending}</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('cityBreakdown').innerHTML = cityHtml || '<tr><td colspan="4" style="text-align: center;">אין נתונים</td></tr>';
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        window.exportAllData = async function() {
+            try {
+                const querySnapshot = await getDocs(collection(db, 'registrations'));
+                let csv = 'מספר רישום,שם מלא,ת.ז,טלפון,עיר,נפשות,הערות,סטטוס,תאריך רישום,תאריך קבלה\n';
+
+                querySnapshot.forEach((doc) => {
+                    const r = doc.data();
+                    const regDate = r.registrationDate?.toDate ? 
+                        r.registrationDate.toDate().toLocaleDateString('he-IL') : '';
+                    const recDate = r.receivedDate?.toDate ? 
+                        r.receivedDate.toDate().toLocaleDateString('he-IL') : '';
+
+                    csv += `${r.registrationNumber},${r.fullName},${r.idNumber},${r.phone || ''},${r.city},${r.familySize},${r.notes || ''},${r.packageReceived ? 'התקבלה' : 'ממתין'},${regDate},${recDate}\n`;
+                });
+
+                const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `דוח_מלא_מאיר_פנים_${new Date().toLocaleDateString('he-IL').replace(/\./g, '-')}.csv`;
+                link.click();
+
+                alert('הדוח יוצא בהצלחה! ✅');
+            } catch (error) {
+                alert('שגיאה בייצוא: ' + error.message);
+            }
+        };
+
+        // Initial load
+        updateDashboard();
+        setInterval(updateDashboard, 30000); // Update every 30 seconds
+    </script>
+</body>
+</html>
