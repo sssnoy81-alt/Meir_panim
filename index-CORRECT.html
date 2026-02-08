@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מאיר פנים - ברוכים הבאים</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .intro-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+        }
+
+        .video-wrapper {
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .skip-btn {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            padding: 12px 25px;
+            background: rgba(255,255,255,0.9);
+            color: #8B1538;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .skip-btn:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 20px;
+            margin-top: 30px;
+            text-align: center;
+            opacity: 0;
+            animation: fadeInOut 2s ease-in-out infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .video-wrapper {
+                max-width: 100%;
+                border-radius: 0;
+            }
+
+            .skip-btn {
+                bottom: 20px;
+                right: 20px;
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .loading-text {
+                font-size: 16px;
+                padding: 0 20px;
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="intro-container" id="introContainer">
+        <div class="video-wrapper">
+            <video id="introVideo" autoplay muted playsinline>
+                <source src="intro-video.mp4" type="video/mp4">
+                הדפדפן שלך לא תומך בהצגת וידאו.
+            </video>
+            <button class="skip-btn" onclick="skipIntro()">דלג ←</button>
+        </div>
+        <div class="loading-text">מאיר פנים - מחלקים לחיים תקווה ואהבה ❤️</div>
+    </div>
+
+    <script>
+        const video = document.getElementById('introVideo');
+        const container = document.getElementById('introContainer');
+
+        video.addEventListener('ended', function() {
+            redirectToHome();
+        });
+
+        video.addEventListener('error', function() {
+            console.log('Video failed to load, redirecting to home...');
+            setTimeout(redirectToHome, 1000);
+        });
+
+        function skipIntro() {
+            redirectToHome();
+        }
+
+        function redirectToHome() {
+            container.classList.add('fade-out');
+            setTimeout(function() {
+                window.location.href = 'home.html';
+            }, 500);
+        }
+
+        setTimeout(function() {
+            if (!video.ended && video.paused) {
+                console.log('Video may not be playing, redirecting...');
+                redirectToHome();
+            }
+        }, 8000);
+
+        video.play().catch(function(error) {
+            console.log('Autoplay prevented:', error);
+            setTimeout(redirectToHome, 2000);
+        });
+    </script>
+</body>
+</html>
