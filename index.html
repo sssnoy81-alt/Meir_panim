@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת ניהול - בית תמחוי מאיר פנים</title>
+    <style>
+        .language-switcher {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .lang-btn {
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.9);
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #8B1538;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .lang-btn.active {
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .header .subtitle {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+        }
+
+        .card .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .card h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .card p {
+            color: #666;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .card.primary {
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+        }
+
+        .card.primary p {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .card.success {
+            background: linear-gradient(135deg, #E4032E 0%, #ff4d6d 100%);
+            color: white;
+        }
+
+        .card.success p {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .card.warning {
+            background: linear-gradient(135deg, #8B1538 0%, #6d1028 100%);
+            color: white;
+        }
+
+        .card.warning p {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .info-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .info-section h3 {
+            color: #8B1538;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-right: 0;
+        }
+
+        .info-section li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        .info-section li:last-child {
+            border-bottom: none;
+        }
+
+        .info-section li::before {
+            content: "✓ ";
+            color: #8B1538;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 32px;
+            }
+            
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="language-switcher">
+        <button class="lang-btn active" onclick="changeLanguage('he')" data-lang="he">עברית</button>
+        <button class="lang-btn" onclick="changeLanguage('en')" data-lang="en">English</button>
+        <button class="lang-btn" onclick="changeLanguage('ru')" data-lang="ru">Русский</button>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 15px; flex-wrap: wrap;">
+                <svg width="100" height="100" viewBox="0 0 200 200" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">
+                    <circle cx="100" cy="100" r="95" fill="white"/>
+                    <!-- Roof -->
+                    <path d="M 55 105 L 100 55 L 145 105 L 145 95 L 100 45 L 55 95 Z" fill="#E4032E"/>
+                    <!-- House body -->
+                    <rect x="65" y="100" width="70" height="60" fill="#E4032E"/>
+                    <!-- People figures -->
+                    <g transform="translate(75, 115)">
+                        <circle cx="10" cy="8" r="6" fill="white"/>
+                        <path d="M 4 18 Q 4 14, 10 14 Q 16 14, 16 18 L 16 30 L 4 30 Z" fill="white"/>
+                    </g>
+                    <g transform="translate(105, 115)">
+                        <circle cx="10" cy="8" r="6" fill="white"/>
+                        <path d="M 4 18 Q 4 14, 10 14 Q 16 14, 16 18 L 16 30 L 4 30 Z" fill="white"/>
+                    </g>
+                    <!-- Door -->
+                    <rect x="90" y="135" width="20" height="25" fill="white" rx="2"/>
+                </svg>
+                <div style="text-align: center;">
+                    <h1 style="margin: 0;">בית תמחוי מאיר פנים</h1>
+                    <p style="margin: 5px 0 0 0; font-size: 16px; opacity: 0.95;">מחלקים לחיים תקווה ואהבה</p>
+                </div>
+            </div>
+            <p class="subtitle">מערכת ניהול חבילות פסח תשפ"ה</p>
+        </div>
+
+        <div class="cards-container">
+            <div class="card primary" onclick="openPage('registration.html')">
+                <div class="icon">📝</div>
+                <h2>רישום משפחות</h2>
+                <p>הרשמה לקבלת חבילת מזון. מלאו פרטים וקבלו ברקוד אישי לאיסוף החבילה</p>
+            </div>
+
+            <div class="card success" onclick="openPage('volunteer.html')">
+                <div class="icon">🤝</div>
+                <h2>ממשק מתנדבים</h2>
+                <p>סריקת ברקודים ואישור מסירת חבילות. מעקב אחר משפחות וחלוקה יעילה</p>
+            </div>
+
+            <div class="card warning" onclick="openPage('admin.html')">
+                <div class="icon">📊</div>
+                <h2>ממשק מנהלים</h2>
+                <p>לוח בקרה מרכזי, סטטיסטיקות בזמן אמת, דוחות וניהול המערכת</p>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3>📋 איך המערכת עובדת?</h3>
+            <ul>
+                <li>משפחות נרשמות דרך טופס הרישום ומקבלות ברקוד אישי</li>
+                <li>הברקוד ניתן להדפסה או לשמירה בטלפון</li>
+                <li>מתנדבים סורקים את הברקוד בעת מסירת החבילה</li>
+                <li>המערכת מעדכנת אוטומטית ומונעת קבלה כפולה</li>
+                <li>מנהלים צופים בזמן אמת בסטטיסטיקות והתקדמות</li>
+                <li>אפשרות לייצוא דוחות והדפסת תוויות</li>
+                <li>כל המערכת עובדת במכשיר שלך - אין צורך באינטרנט קבוע</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p style="font-size: 18px; margin-bottom: 10px;">❤️ מאיר פנים - מחלקים לחיים תקווה ואהבה</p>
+            <p>נבנה במסירות למען משפחות ישראל</p>
+            <p style="margin-top: 15px;">חג פסח כשר ושמח! 🕊️</p>
+        </div>
+    </div>
+
+    <script>
+        // Translations
+        const translations = {
+            he: {
+                dir: 'rtl',
+                title: 'בית תמחוי מאיר פנים',
+                subtitle: 'מערכת ניהול חבילות פסח תשפ"ה',
+                card1Title: 'רישום משפחות',
+                card1Text: 'הרשמה לקבלת חבילת מזון. מלאו פרטים וקבלו ברקוד אישי לאיסוף החבילה',
+                card2Title: 'ממשק מתנדבים',
+                card2Text: 'סריקת ברקודים ואישור מסירת חבילות. מעקב אחר משפחות וחלוקה יעילה',
+                card3Title: 'ממשק מנהלים',
+                card3Text: 'לוח בקרה מרכזי, סטטיסטיקות בזמן אמת, דוחות וניהול המערכת',
+                infoTitle: '📋 איך המערכת עובדת?',
+                info1: 'משפחות נרשמות דרך טופס הרישום ומקבלות ברקוד אישי',
+                info2: 'הברקוד ניתן להדפסה או לשמירה בטלפון',
+                info3: 'מתנדבים סורקים את הברקוד בעת מסירת החבילה',
+                info4: 'המערכת מעדכנת אוטומטית ומונעת קבלה כפולה',
+                info5: 'מנהלים צופים בזמן אמת בסטטיסטיקות והתקדמות',
+                info6: 'אפשרות לייצוא דוחות והדפסת תוויות',
+                info7: 'כל המערכת עובדת במכשיר שלך - אין צורך באינטרנט קבוע',
+                footer1: 'נבנה בהתנדבות למען משפחות ישראל ❤️',
+                footer2: 'חג פסח כשר ושמח!'
+            },
+            en: {
+                dir: 'ltr',
+                title: 'Meir Panim Food Bank',
+                subtitle: 'Passover Package Management System 2025',
+                card1Title: 'Family Registration',
+                card1Text: 'Register to receive a food package. Fill in details and get a personal barcode for pickup',
+                card2Title: 'Volunteer Interface',
+                card2Text: 'Scan barcodes and confirm package delivery. Track families and efficient distribution',
+                card3Title: 'Admin Interface',
+                card3Text: 'Central control panel, real-time statistics, reports and system management',
+                infoTitle: '📋 How does the system work?',
+                info1: 'Families register through the registration form and receive a personal barcode',
+                info2: 'The barcode can be printed or saved on the phone',
+                info3: 'Volunteers scan the barcode when delivering the package',
+                info4: 'The system updates automatically and prevents duplicate pickup',
+                info5: 'Managers view statistics and progress in real-time',
+                info6: 'Ability to export reports and print labels',
+                info7: 'The entire system works on your device - no constant internet needed',
+                footer1: 'Built with love for Israeli families ❤️',
+                footer2: 'Happy Passover!'
+            },
+            ru: {
+                dir: 'ltr',
+                title: 'Продуктовый банк Меир Паним',
+                subtitle: 'Система управления наборами на Песах 2025',
+                card1Title: 'Регистрация семей',
+                card1Text: 'Зарегистрируйтесь для получения продуктового набора. Заполните данные и получите персональный штрих-код',
+                card2Title: 'Интерфейс волонтёров',
+                card2Text: 'Сканирование штрих-кодов и подтверждение выдачи наборов. Отслеживание семей и эффективная раздача',
+                card3Title: 'Интерфейс администраторов',
+                card3Text: 'Центральная панель управления, статистика в реальном времени, отчёты и управление системой',
+                infoTitle: '📋 Как работает система?',
+                info1: 'Семьи регистрируются через форму регистрации и получают персональный штрих-код',
+                info2: 'Штрих-код можно распечатать или сохранить в телефоне',
+                info3: 'Волонтёры сканируют штрих-код при выдаче набора',
+                info4: 'Система обновляется автоматически и предотвращает повторное получение',
+                info5: 'Администраторы видят статистику и прогресс в реальном времени',
+                info6: 'Возможность экспорта отчётов и печати этикеток',
+                info7: 'Вся система работает на вашем устройстве - не требуется постоянный интернет',
+                footer1: 'Создано с любовью для израильских семей ❤️',
+                footer2: 'Счастливого Песаха!'
+            }
+        };
+
+        let currentLanguage = 'he';
+
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            const t = translations[lang];
+            
+            // Update direction
+            document.documentElement.setAttribute('dir', t.dir);
+            document.body.setAttribute('dir', t.dir);
+            
+            // Update active button
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Update header
+            document.querySelector('.header h1').textContent = t.title;
+            document.querySelector('.subtitle').textContent = t.subtitle;
+            
+            // Update cards
+            const cards = document.querySelectorAll('.card');
+            cards[0].querySelector('h2').textContent = t.card1Title;
+            cards[0].querySelector('p').textContent = t.card1Text;
+            cards[1].querySelector('h2').textContent = t.card2Title;
+            cards[1].querySelector('p').textContent = t.card2Text;
+            cards[2].querySelector('h2').textContent = t.card3Title;
+            cards[2].querySelector('p').textContent = t.card3Text;
+            
+            // Update info section
+            document.querySelector('.info-section h3').textContent = t.infoTitle;
+            const listItems = document.querySelectorAll('.info-section li');
+            listItems[0].textContent = t.info1;
+            listItems[1].textContent = t.info2;
+            listItems[2].textContent = t.info3;
+            listItems[3].textContent = t.info4;
+            listItems[4].textContent = t.info5;
+            listItems[5].textContent = t.info6;
+            listItems[6].textContent = t.info7;
+            
+            // Update footer
+            const footerPs = document.querySelectorAll('.footer p');
+            footerPs[0].textContent = t.footer1;
+            footerPs[1].textContent = t.footer2;
+        }
+
+        // Function to navigate to pages
+        function openPage(page) {
+            window.location.href = page;
+        }
+
+        // Display some statistics on the main page
+        window.addEventListener('load', function() {
+            const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+            if (registrations.length > 0) {
+                const distributed = registrations.filter(r => r.packageReceived).length;
+                const header = document.querySelector('.header');
+                
+                const statsDiv = document.createElement('div');
+                statsDiv.style.cssText = 'background: rgba(255,255,255,0.2); padding: 20px; border-radius: 15px; margin-top: 20px;';
+                statsDiv.innerHTML = `
+                    <h3 style="margin-bottom: 10px;">📊 מצב נוכחי:</h3>
+                    <p style="font-size: 18px;">${registrations.length} משפחות רשומות | ${distributed} קיבלו חבילה | ${registrations.length - distributed} ממתינים</p>
+                `;
+                header.appendChild(statsDiv);
+            }
+        });
+    </script>
+</body>
+</html>

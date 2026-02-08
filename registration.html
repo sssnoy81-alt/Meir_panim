@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>רישום למשפחות - בית תמחוי מאיר פנים</title>
+    <style>
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .lang-btn {
+            padding: 8px 15px;
+            background: white;
+            border: 2px solid #8B1538;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #8B1538;
+            transition: all 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: #8B1538;
+            color: white;
+        }
+
+        .lang-btn.active {
+            background: #8B1538;
+            color: white;
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .form-section {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+
+        input[type="text"],
+        input[type="tel"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #8B1538;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 21, 56, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: #fff5f7;
+            border-right: 4px solid #8B1538;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .info-box p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .barcode-container {
+            margin-top: 20px;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        #qrcode {
+            margin: 20px auto;
+        }
+
+        .print-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .print-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-switcher">
+        <button class="lang-btn active" onclick="changeLanguage('he')" data-lang="he">עברית</button>
+        <button class="lang-btn" onclick="changeLanguage('en')" data-lang="en">English</button>
+        <button class="lang-btn" onclick="changeLanguage('ru')" data-lang="ru">Русский</button>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <svg width="80" height="80" viewBox="0 0 200 200" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+                    <!-- House/Home icon with people -->
+                    <circle cx="100" cy="100" r="95" fill="white"/>
+                    <!-- Roof -->
+                    <path d="M 60 100 L 100 60 L 140 100" stroke="white" stroke-width="0" fill="none"/>
+                    <path d="M 55 105 L 100 55 L 145 105 L 145 95 L 100 45 L 55 95 Z" fill="#8B1538"/>
+                    <!-- House body -->
+                    <rect x="65" y="100" width="70" height="60" fill="#8B1538"/>
+                    <!-- People figures -->
+                    <g transform="translate(75, 115)">
+                        <!-- Left person -->
+                        <circle cx="10" cy="8" r="6" fill="white"/>
+                        <path d="M 4 18 Q 4 14, 10 14 Q 16 14, 16 18 L 16 30 L 4 30 Z" fill="white"/>
+                    </g>
+                    <g transform="translate(105, 115)">
+                        <!-- Right person -->
+                        <circle cx="10" cy="8" r="6" fill="white"/>
+                        <path d="M 4 18 Q 4 14, 10 14 Q 16 14, 16 18 L 16 30 L 4 30 Z" fill="white"/>
+                    </g>
+                    <!-- Door -->
+                    <rect x="90" y="135" width="20" height="25" fill="white" rx="2"/>
+                    <!-- Base text -->
+                    <text x="100" y="180" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">מאיר פנים</text>
+                    <text x="100" y="195" font-family="Arial" font-size="10" fill="white" text-anchor="middle">מחלקים לחיים תקווה ואהבה</text>
+                </svg>
+                <div style="text-align: center;">
+                    <h1>בית תמחוי מאיר פנים</h1>
+                    <p style="font-size: 14px; margin-top: 5px; opacity: 0.95;">מחלקים לחיים תקווה ואהבה</p>
+                    <p>רישום לקבלת חבילת מזון לפסח תשפ"ה</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="info-box">
+                <p><strong>ברוכים הבאים למאיר פנים!</strong><br>
+                אנחנו כאן בשבילכם. אנא מלאו את הפרטים הבאים לצורך רישום למשפחתכם לקבלת חבילת מזון לחג הפסח. לאחר השלמת הרישום תקבלו ברקוד אישי שיאפשר לכם לאסוף את החבילה בקלות ובמהירות.</p>
+            </div>
+
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label>שם מלא <span class="required">*</span></label>
+                    <input type="text" id="fullName" name="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>מספר תעודת זהות <span class="required">*</span></label>
+                    <input type="text" id="idNumber" name="idNumber" pattern="[0-9]{9}" maxlength="9" required>
+                </div>
+
+                <div class="form-group">
+                    <label>מספר טלפון</label>
+                    <input type="tel" id="phone" name="phone" pattern="[0-9]{9,10}" placeholder="050-1234567">
+                </div>
+
+                <div class="form-group">
+                    <label>עיר <span class="required">*</span></label>
+                    <input type="text" id="city" name="city" required>
+                </div>
+
+                <div class="form-group">
+                    <label>מספר נפשות במשפחה <span class="required">*</span></label>
+                    <select id="familySize" name="familySize" required>
+                        <option value="">בחר מספר נפשות</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10+">10+</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>הערות (אופציונלי)</label>
+                    <input type="text" id="notes" name="notes" placeholder="למשל: צרכים מיוחדים, אלרגיות">
+                </div>
+
+                <button type="submit" class="submit-btn">שלח רישום</button>
+            </form>
+
+            <div id="successMessage" class="success-message">
+                <h2>✅ נרשמת בהצלחה למאיר פנים!</h2>
+                <p style="font-size: 16px; margin: 10px 0;">ברוכים הבאים למשפחת מאיר פנים</p>
+                <p>מספר הרישום שלך: <strong id="registrationNumber"></strong></p>
+                <div class="barcode-container">
+                    <p><strong>זהו הברקוד האישי שלך:</strong></p>
+                    <div id="qrcode"></div>
+                    <p style="margin-top: 10px; color: #666;">💡 שמור תמונה של הברקוד או הדפס את התלוש</p>
+                    <p style="color: #666;">הצג את הברקוד בעת איסוף החבילה</p>
+                    <button class="print-btn" onclick="window.print()">🖨️ הדפס תלוש</button>
+                </div>
+                <p style="margin-top: 20px; font-size: 14px; color: #666;">
+                    נתראה בקרוב! צוות מאיר פנים ❤️
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Translation dictionary
+        const translations = {
+            he: {
+                dir: 'rtl',
+                title: 'בית תמחוי מאיר פנים',
+                subtitle: 'רישום לקבלת חבילת מזון לפסח תשפ"ה',
+                welcome: 'ברוכים הבאים למאיר פנים!',
+                welcomeText: 'אנחנו כאן בשבילכם. אנא מלאו את הפרטים הבאים לצורך רישום למשפחתכם לקבלת חבילת מזון לחג הפסח. לאחר השלמת הרישום תקבלו ברקוד אישי שיאפשר לכם לאסוף את החבילה בקלות ובמהירות.',
+                fullName: 'שם מלא',
+                idNumber: 'מספר תעודת זהות',
+                phone: 'מספר טלפון',
+                address: 'כתובת מגורים',
+                city: 'עיר',
+                familySize: 'מספר נפשות במשפחה',
+                selectSize: 'בחר מספר נפשות',
+                notes: 'הערות (אופציונלי)',
+                notesPlaceholder: 'למשל: צרכים מיוחדים, אלרגיות',
+                submit: 'שלח רישום',
+                successTitle: 'הרישום בוצע בהצלחה!',
+                registrationNumber: 'מספר הרישום שלך:',
+                barcodeTitle: 'זהו הברקוד האישי שלך:',
+                barcodeInstruction: 'שמור את הברקוד או הצג אותו בעת איסוף החבילה',
+                printBtn: '🖨️ הדפס תלוש',
+                required: '*'
+            },
+            en: {
+                dir: 'ltr',
+                title: 'Meir Panim Food Bank',
+                subtitle: 'Registration for Passover Food Package 2025',
+                welcome: 'Welcome to Meir Panim!',
+                welcomeText: 'We are here for you. Please fill in the following details to register your family for a Passover food package. After completing the registration, you will receive a personal barcode that will allow you to collect the package quickly and easily.',
+                fullName: 'Full Name',
+                idNumber: 'ID Number',
+                phone: 'Phone Number',
+                address: 'Home Address',
+                city: 'City',
+                familySize: 'Family Size',
+                selectSize: 'Select number of people',
+                notes: 'Notes (Optional)',
+                notesPlaceholder: 'For example: Special needs, allergies',
+                submit: 'Submit Registration',
+                successTitle: 'Registration Successful!',
+                registrationNumber: 'Your registration number:',
+                barcodeTitle: 'This is your personal barcode:',
+                barcodeInstruction: 'Save the barcode or show it when collecting the package',
+                printBtn: '🖨️ Print Receipt',
+                required: '*'
+            },
+            ru: {
+                dir: 'ltr',
+                title: 'Продуктовый банк Меир Паним',
+                subtitle: 'Регистрация на продуктовый набор к Песаху 2025',
+                welcome: 'Добро пожаловать в Меир Паним!',
+                welcomeText: 'Мы здесь для вас. Пожалуйста, заполните следующие данные для регистрации вашей семьи на получение продуктового набора к Песаху. После завершения регистрации вы получите персональный штрих-код, который позволит вам быстро и легко получить набор.',
+                fullName: 'Полное имя',
+                idNumber: 'Номер удостоверения личности',
+                phone: 'Номер телефона',
+                address: 'Домашний адрес',
+                city: 'Город',
+                familySize: 'Размер семьи',
+                selectSize: 'Выберите количество человек',
+                notes: 'Примечания (необязательно)',
+                notesPlaceholder: 'Например: особые потребности, аллергии',
+                submit: 'Отправить регистрацию',
+                successTitle: 'Регистрация успешно завершена!',
+                registrationNumber: 'Ваш регистрационный номер:',
+                barcodeTitle: 'Это ваш персональный штрих-код:',
+                barcodeInstruction: 'Сохраните штрих-код или покажите его при получении набора',
+                printBtn: '🖨️ Распечатать квитанцию',
+                required: '*'
+            }
+        };
+
+        let currentLanguage = 'he';
+
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            const t = translations[lang];
+            
+            // Update direction
+            document.documentElement.setAttribute('dir', t.dir);
+            document.body.setAttribute('dir', t.dir);
+            
+            // Update active button
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Update all text elements
+            document.querySelector('.header h1').textContent = t.title;
+            document.querySelector('.header p').textContent = t.subtitle;
+            document.querySelector('.info-box strong').textContent = t.welcome;
+            document.querySelector('.info-box p').innerHTML = `<strong>${t.welcome}</strong><br>${t.welcomeText}`;
+            
+            // Update form labels
+            const labels = document.querySelectorAll('label');
+            labels[0].innerHTML = `${t.fullName} <span class="required">${t.required}</span>`;
+            labels[1].innerHTML = `${t.idNumber} <span class="required">${t.required}</span>`;
+            labels[2].textContent = t.phone;
+            labels[3].innerHTML = `${t.address} <span class="required">${t.required}</span>`;
+            labels[4].innerHTML = `${t.city} <span class="required">${t.required}</span>`;
+            labels[5].innerHTML = `${t.familySize} <span class="required">${t.required}</span>`;
+            labels[6].textContent = t.notes;
+            
+            // Update select placeholder
+            document.querySelector('#familySize option[value=""]').textContent = t.selectSize;
+            
+            // Update placeholders
+            document.getElementById('notes').placeholder = t.notesPlaceholder;
+            
+            // Update submit button
+            document.querySelector('.submit-btn').textContent = t.submit;
+            
+            // Update success message if visible
+            const successMsg = document.querySelector('#successMessage h2');
+            if (successMsg) {
+                successMsg.textContent = t.successTitle;
+            }
+        }
+
+        // Local storage database simulation
+        const registrationForm = document.getElementById('registrationForm');
+        const successMessage = document.getElementById('successMessage');
+        const registrationNumberEl = document.getElementById('registrationNumber');
+
+        registrationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Collect form data
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                idNumber: document.getElementById('idNumber').value,
+                phone: document.getElementById('phone').value,
+                city: document.getElementById('city').value,
+                familySize: document.getElementById('familySize').value,
+                notes: document.getElementById('notes').value,
+                registrationDate: new Date().toISOString(),
+                registrationNumber: 'MP' + Date.now().toString().slice(-8),
+                packageReceived: false
+            };
+
+            // Save to localStorage
+            let registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+            registrations.push(formData);
+            localStorage.setItem('registrations', JSON.stringify(registrations));
+
+            // Show success message
+            const t = translations[currentLanguage];
+            registrationNumberEl.textContent = formData.registrationNumber;
+            document.querySelector('#successMessage h2').textContent = t.successTitle;
+            document.querySelector('#successMessage p:first-of-type').innerHTML = `${t.registrationNumber} <strong id="registrationNumber">${formData.registrationNumber}</strong>`;
+            document.querySelector('.barcode-container p:first-of-type strong').textContent = t.barcodeTitle;
+            document.querySelector('.barcode-container p:last-of-type').textContent = t.barcodeInstruction;
+            document.querySelector('.print-btn').textContent = t.printBtn;
+            
+            registrationForm.style.display = 'none';
+            successMessage.classList.add('show');
+
+            // Generate QR Code
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), {
+                text: JSON.stringify({
+                    id: formData.registrationNumber,
+                    name: formData.fullName,
+                    idNumber: formData.idNumber,
+                    familySize: formData.familySize
+                }),
+                width: 200,
+                height: 200
+            });
+        });
+
+        // Print styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @media print {
+                body * {
+                    visibility: hidden;
+                }
+                .success-message, .success-message * {
+                    visibility: visible;
+                }
+                .success-message {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                }
+                .print-btn {
+                    display: none;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

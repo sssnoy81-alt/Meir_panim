@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ממשק מתנדבים - בית תמחוי מאיר פנים</title>
+    <style>
+        .language-switcher {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+            background: white;
+            padding: 8px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .lang-btn {
+            padding: 6px 12px;
+            background: white;
+            border: 2px solid #8B1538;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #8B1538;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .lang-btn:hover {
+            background: #8B1538;
+            color: white;
+        }
+
+        .lang-btn.active {
+            background: #8B1538;
+            color: white;
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #8B1538;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #8B1538;
+        }
+
+        .main-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 25px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #8B1538;
+            border-bottom-color: #8B1538;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .scanner-section {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 10px;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .scan-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+
+        .scan-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .scan-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .manual-search {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .search-btn {
+            padding: 10px 30px;
+            background: #8B1538;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border: 2px solid #8B1538;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .result-card h3 {
+            color: #8B1538;
+            margin-bottom: 15px;
+        }
+
+        .result-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .info-item .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .confirm-btn {
+            flex: 1;
+            padding: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .confirm-btn:hover {
+            background: #218838;
+        }
+
+        .cancel-btn {
+            flex: 1;
+            padding: 15px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .list-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .list-table th {
+            background: #8B1538;
+            color: white;
+            padding: 12px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .list-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .list-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-received {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: 2px solid #8B1538;
+            background: white;
+            color: #8B1538;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #8B1538;
+            color: white;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            background: #E4032E;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-switcher">
+        <button class="lang-btn active" onclick="changeLanguage('he')" data-lang="he">HE</button>
+        <button class="lang-btn" onclick="changeLanguage('en')" data-lang="en">EN</button>
+        <button class="lang-btn" onclick="changeLanguage('ru')" data-lang="ru">RU</button>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; flex-wrap: wrap;">
+                <svg width="60" height="60" viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="95" fill="#8B1538"/>
+                    <path d="M 55 105 L 100 55 L 145 105 L 145 95 L 100 45 L 55 95 Z" fill="white"/>
+                    <rect x="65" y="100" width="70" height="60" fill="white"/>
+                    <g transform="translate(75, 115)">
+                        <circle cx="10" cy="8" r="6" fill="#8B1538"/>
+                        <path d="M 4 18 Q 4 14, 10 14 Q 16 14, 16 18 L 16 30 L 4 30 Z" fill="#8B1538"/>
+                    </g>
+                    <g transform="translate(105, 115)">
+                        <circle cx="10" cy="8" r="6" fill="#8B1538"/>
+                        <path d="M 4 18 Q 4 14, 10 14 Q 16 14, 16 18 L 16 30 L 4 30 Z" fill="#8B1538"/>
+                    </g>
+                    <rect x="90" y="135" width="20" height="25" fill="#8B1538" rx="2"/>
+                </svg>
+                <h1 style="margin: 0;">ממשק ניהול מתנדבים</h1>
+            </div>
+            <p style="font-size: 14px; margin: 5px 0; opacity: 0.85;">מחלקים לחיים תקווה ואהבה</p>
+            <p>בית תמחוי מאיר פנים - חלוקת חבילות פסח תשפ"ה</p>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>סך הכל נרשמו</h3>
+                <div class="number" id="totalRegistrations">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>קיבלו חבילה</h3>
+                <div class="number" id="receivedPackages">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>ממתינים לאיסוף</h3>
+                <div class="number" id="pendingPackages">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>סך נפשות</h3>
+                <div class="number" id="totalPeople">0</div>
+            </div>
+        </div>
+
+        <div class="main-panel">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('scan')">📷 סריקת ברקוד</button>
+                <button class="tab" onclick="switchTab('manual')">🔍 חיפוש ידני</button>
+                <button class="tab" onclick="switchTab('list')">📋 רשימת משפחות</button>
+            </div>
+
+            <!-- Scan Tab -->
+            <div id="scanTab" class="tab-content active">
+                <div class="scanner-section">
+                    <h2>סרוק ברקוד של המשפחה</h2>
+                    <p style="color: #666; margin-bottom: 20px;">הצמד את המצלמה לברקוד למשך שניה</p>
+                    <video id="video" style="display: none;"></video>
+                    <div id="scanPlaceholder" style="padding: 100px; background: #e0e0e0; border-radius: 10px; max-width: 500px; margin: 20px auto;">
+                        <p style="font-size: 18px; color: #666;">📷 לחץ על "התחל סריקה" להפעלת המצלמה</p>
+                    </div>
+                    <button class="scan-btn" id="startScanBtn" onclick="startScanner()">התחל סריקה</button>
+                    <button class="scan-btn" id="stopScanBtn" onclick="stopScanner()" style="display: none; background: #dc3545;">עצור סריקה</button>
+                </div>
+
+                <div class="manual-search">
+                    <h3>או חפש ידנית:</h3>
+                    <input type="text" class="search-input" id="quickSearch" placeholder="הקלד מספר רישום, ת.ז או שם...">
+                    <button class="search-btn" onclick="quickSearch()">חפש</button>
+                </div>
+
+                <div id="scanResult"></div>
+            </div>
+
+            <!-- Manual Search Tab -->
+            <div id="manualTab" class="tab-content">
+                <div class="manual-search">
+                    <h2>חיפוש משפחה</h2>
+                    <input type="text" class="search-input" id="manualSearchInput" placeholder="הקלד מספר רישום, תעודת זהות או שם מלא...">
+                    <button class="search-btn" onclick="manualSearch()">חפש</button>
+                </div>
+                <div id="manualResult"></div>
+            </div>
+
+            <!-- List Tab -->
+            <div id="listTab" class="tab-content">
+                <div class="filter-section">
+                    <button class="filter-btn active" onclick="filterList('all')">הכל</button>
+                    <button class="filter-btn" onclick="filterList('pending')">ממתינים</button>
+                    <button class="filter-btn" onclick="filterList('received')">קיבלו</button>
+                    <button class="export-btn" onclick="exportToExcel()">📥 ייצא לאקסל</button>
+                </div>
+                <div id="familyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        // Translations for volunteer interface
+        const translations = {
+            he: {
+                dir: 'rtl',
+                title: 'ממשק ניהול מתנדבים',
+                subtitle: 'בית תמחוי מאיר פנים - חלוקת חבילות פסח תשפ"ה',
+                totalRegistrations: 'סך הכל נרשמו',
+                receivedPackages: 'קיבלו חבילה',
+                pendingPackages: 'ממתינים לאיסוף',
+                totalPeople: 'סך נפשות',
+                scanTab: '📷 סריקת ברקוד',
+                manualTab: '🔍 חיפוש ידני',
+                listTab: '📋 רשימת משפחות',
+                scanTitle: 'סרוק ברקוד של המשפחה',
+                scanInstruction: 'הצמד את המצלמה לברקוד למשך שניה',
+                startScan: 'התחל סריקה',
+                stopScan: 'עצור סריקה',
+                orSearchManually: 'או חפש ידנית:',
+                searchPlaceholder: 'הקלד מספר רישום, ת.ז או שם...',
+                searchBtn: 'חפש',
+                confirmDelivery: '✅ אשר מסירת חבילה',
+                cancel: '❌ ביטול'
+            },
+            en: {
+                dir: 'ltr',
+                title: 'Volunteer Management Interface',
+                subtitle: 'Meir Panim - Passover Package Distribution 2025',
+                totalRegistrations: 'Total Registered',
+                receivedPackages: 'Received Package',
+                pendingPackages: 'Pending Pickup',
+                totalPeople: 'Total People',
+                scanTab: '📷 Scan Barcode',
+                manualTab: '🔍 Manual Search',
+                listTab: '📋 Family List',
+                scanTitle: 'Scan Family Barcode',
+                scanInstruction: 'Hold camera to barcode for a second',
+                startScan: 'Start Scanning',
+                stopScan: 'Stop Scanning',
+                orSearchManually: 'Or search manually:',
+                searchPlaceholder: 'Enter registration number, ID or name...',
+                searchBtn: 'Search',
+                confirmDelivery: '✅ Confirm Package Delivery',
+                cancel: '❌ Cancel'
+            },
+            ru: {
+                dir: 'ltr',
+                title: 'Интерфейс управления волонтёрами',
+                subtitle: 'Меир Паним - Раздача наборов на Песах 2025',
+                totalRegistrations: 'Всего зарегистрировано',
+                receivedPackages: 'Получили набор',
+                pendingPackages: 'Ожидают получения',
+                totalPeople: 'Всего человек',
+                scanTab: '📷 Сканировать штрих-код',
+                manualTab: '🔍 Ручной поиск',
+                listTab: '📋 Список семей',
+                scanTitle: 'Отсканируйте штрих-код семьи',
+                scanInstruction: 'Наведите камеру на штрих-код на секунду',
+                startScan: 'Начать сканирование',
+                stopScan: 'Остановить сканирование',
+                orSearchManually: 'Или выполните поиск вручную:',
+                searchPlaceholder: 'Введите номер регистрации, ID или имя...',
+                searchBtn: 'Поиск',
+                confirmDelivery: '✅ Подтвердить выдачу набора',
+                cancel: '❌ Отмена'
+            }
+        };
+
+        let currentLanguage = 'he';
+
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            const t = translations[lang];
+            
+            // Update direction
+            document.documentElement.setAttribute('dir', t.dir);
+            document.body.setAttribute('dir', t.dir);
+            
+            // Update active button
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Update header
+            document.querySelector('.header h1').textContent = t.title;
+            document.querySelector('.header p').textContent = t.subtitle;
+            
+            // Update stats
+            document.querySelectorAll('.stat-card h3')[0].textContent = t.totalRegistrations;
+            document.querySelectorAll('.stat-card h3')[1].textContent = t.receivedPackages;
+            document.querySelectorAll('.stat-card h3')[2].textContent = t.pendingPackages;
+            document.querySelectorAll('.stat-card h3')[3].textContent = t.totalPeople;
+            
+            // Update tabs
+            document.querySelectorAll('.tab')[0].textContent = t.scanTab;
+            document.querySelectorAll('.tab')[1].textContent = t.manualTab;
+            document.querySelectorAll('.tab')[2].textContent = t.listTab;
+            
+            // Update scan section
+            const scanTitle = document.querySelector('.scanner-section h2');
+            if (scanTitle) scanTitle.textContent = t.scanTitle;
+            
+            const scanInstruction = document.querySelector('.scanner-section p');
+            if (scanInstruction) scanInstruction.textContent = t.scanInstruction;
+            
+            document.getElementById('startScanBtn').textContent = t.startScan;
+            document.getElementById('stopScanBtn').textContent = t.stopScan;
+            
+            // Update search
+            const manualSearchH3 = document.querySelector('.manual-search h3');
+            if (manualSearchH3) manualSearchH3.textContent = t.orSearchManually;
+            
+            document.getElementById('quickSearch').placeholder = t.searchPlaceholder;
+            document.querySelectorAll('.search-btn').forEach(btn => btn.textContent = t.searchBtn);
+        }
+
+        let html5QrCode;
+        let currentFilter = 'all';
+
+        // Load and update statistics
+        function updateStats() {
+            const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+            const received = registrations.filter(r => r.packageReceived).length;
+            const totalPeople = registrations.reduce((sum, r) => {
+                const size = parseInt(r.familySize) || 0;
+                return sum + size;
+            }, 0);
+
+            document.getElementById('totalRegistrations').textContent = registrations.length;
+            document.getElementById('receivedPackages').textContent = received;
+            document.getElementById('pendingPackages').textContent = registrations.length - received;
+            document.getElementById('totalPeople').textContent = totalPeople;
+        }
+
+        // Switch between tabs
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+
+            if (tabName === 'list') {
+                loadFamilyList();
+            }
+        }
+
+        // Scanner functions
+        function startScanner() {
+            document.getElementById('scanPlaceholder').style.display = 'none';
+            document.getElementById('video').style.display = 'block';
+            document.getElementById('startScanBtn').style.display = 'none';
+            document.getElementById('stopScanBtn').style.display = 'inline-block';
+
+            html5QrCode = new Html5Qrcode("video");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                onScanSuccess
+            ).catch(err => {
+                alert('שגיאה בהפעלת המצלמה: ' + err);
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop();
+                document.getElementById('video').style.display = 'none';
+                document.getElementById('scanPlaceholder').style.display = 'block';
+                document.getElementById('startScanBtn').style.display = 'inline-block';
+                document.getElementById('stopScanBtn').style.display = 'none';
+            }
+        }
+
+        function onScanSuccess(decodedText) {
+            stopScanner();
+            try {
+                const data = JSON.parse(decodedText);
+                searchAndDisplay(data.id, 'scanResult');
+            } catch (e) {
+                searchAndDisplay(decodedText, 'scanResult');
+            }
+        }
+
+        // Search functions
+        function quickSearch() {
+            const query = document.getElementById('quickSearch').value;
+            searchAndDisplay(query, 'scanResult');
+        }
+
+        function manualSearch() {
+            const query = document.getElementById('manualSearchInput').value;
+            searchAndDisplay(query, 'manualResult');
+        }
+
+        function searchAndDisplay(query, resultDivId) {
+            const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+            const result = registrations.find(r => 
+                r.registrationNumber === query ||
+                r.idNumber === query ||
+                r.fullName.includes(query)
+            );
+
+            const resultDiv = document.getElementById(resultDivId);
+            
+            if (result) {
+                if (result.packageReceived) {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-warning">
+                            <h3>⚠️ משפחה זו כבר קיבלה חבילה</h3>
+                            <p>תאריך קבלה: ${new Date(result.receivedDate).toLocaleString('he-IL')}</p>
+                            <p>שם: ${result.fullName}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result-card">
+                            <h3>✅ משפחה נמצאה במערכת</h3>
+                            <div class="result-info">
+                                <div class="info-item">
+                                    <label>שם מלא</label>
+                                    <div class="value">${result.fullName}</div>
+                                </div>
+                                <div class="info-item">
+                                    <label>מספר רישום</label>
+                                    <div class="value">${result.registrationNumber}</div>
+                                </div>
+                                <div class="info-item">
+                                    <label>תעודת זהות</label>
+                                    <div class="value">${result.idNumber}</div>
+                                </div>
+                                <div class="info-item">
+                                    <label>מספר נפשות</label>
+                                    <div class="value">${result.familySize}</div>
+                                </div>
+                                <div class="info-item">
+                                    <label>טלפון</label>
+                                    <div class="value">${result.phone || 'לא צוין'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <label>עיר</label>
+                                    <div class="value">${result.city}</div>
+                                </div>
+                            </div>
+                            ${result.notes ? `<p><strong>הערות:</strong> ${result.notes}</p>` : ''}
+                            <div class="action-buttons">
+                                <button class="confirm-btn" onclick="confirmDelivery('${result.registrationNumber}')">
+                                    ✅ אשר מסירת חבילה
+                                </button>
+                                <button class="cancel-btn" onclick="clearResult('${resultDivId}')">
+                                    ❌ ביטול
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-error">
+                        <h3>❌ לא נמצאה משפחה במערכת</h3>
+                        <p>אנא בדוק את הפרטים ונסה שוב</p>
+                    </div>
+                `;
+            }
+        }
+
+        function confirmDelivery(registrationNumber) {
+            if (!confirm('האם אתה בטוח שברצונך לאשר מסירת חבילה למשפחה זו?')) {
+                return;
+            }
+
+            let registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+            const index = registrations.findIndex(r => r.registrationNumber === registrationNumber);
+            
+            if (index !== -1) {
+                registrations[index].packageReceived = true;
+                registrations[index].receivedDate = new Date().toISOString();
+                localStorage.setItem('registrations', JSON.stringify(registrations));
+                
+                document.getElementById('scanResult').innerHTML = `
+                    <div class="alert alert-success">
+                        <h3>✅ החבילה נמסרה בהצלחה!</h3>
+                        <p>משפחת ${registrations[index].fullName} - ${registrations[index].familySize} נפשות</p>
+                        <p>שעה: ${new Date().toLocaleTimeString('he-IL')}</p>
+                    </div>
+                `;
+                
+                updateStats();
+                setTimeout(() => {
+                    clearResult('scanResult');
+                }, 3000);
+            }
+        }
+
+        function clearResult(divId) {
+            document.getElementById(divId).innerHTML = '';
+        }
+
+        // Family list functions
+        function loadFamilyList() {
+            const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+            let filtered = registrations;
+
+            if (currentFilter === 'pending') {
+                filtered = registrations.filter(r => !r.packageReceived);
+            } else if (currentFilter === 'received') {
+                filtered = registrations.filter(r => r.packageReceived);
+            }
+
+            let html = `
+                <table class="list-table">
+                    <thead>
+                        <tr>
+                            <th>מספר רישום</th>
+                            <th>שם מלא</th>
+                            <th>ת.ז</th>
+                            <th>עיר</th>
+                            <th>נפשות</th>
+                            <th>טלפון</th>
+                            <th>סטטוס</th>
+                            <th>תאריך רישום</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            filtered.forEach(r => {
+                const status = r.packageReceived ? 
+                    '<span class="status-badge status-received">התקבלה</span>' :
+                    '<span class="status-badge status-pending">ממתין</span>';
+                
+                html += `
+                    <tr>
+                        <td>${r.registrationNumber}</td>
+                        <td>${r.fullName}</td>
+                        <td>${r.idNumber}</td>
+                        <td>${r.city}</td>
+                        <td>${r.familySize}</td>
+                        <td>${r.phone || '-'}</td>
+                        <td>${status}</td>
+                        <td>${new Date(r.registrationDate).toLocaleDateString('he-IL')}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('familyList').innerHTML = html;
+        }
+
+        function filterList(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadFamilyList();
+        }
+
+        function exportToExcel() {
+            const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+            let csv = 'מספר רישום,שם מלא,תעודת זהות,טלפון,עיר,נפשות,הערות,סטטוס,תאריך רישום,תאריך קבלה\n';
+            
+            registrations.forEach(r => {
+                csv += `${r.registrationNumber},${r.fullName},${r.idNumber},${r.phone || ''},${r.city},${r.familySize},${r.notes || ''},${r.packageReceived ? 'התקבלה' : 'ממתין'},${new Date(r.registrationDate).toLocaleDateString('he-IL')},${r.receivedDate ? new Date(r.receivedDate).toLocaleDateString('he-IL') : ''}\n`;
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `מאיר_פנים_רישומים_${new Date().toLocaleDateString('he-IL')}.csv`;
+            link.click();
+        }
+
+        // Initialize on load
+        updateStats();
+        setInterval(updateStats, 5000); // Update every 5 seconds
+    </script>
+</body>
+</html>
