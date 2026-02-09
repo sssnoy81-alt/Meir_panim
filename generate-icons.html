@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Generate Icons</title>
+</head>
+<body>
+    <h2>אייקונים ל-PWA - הורד את התמונות</h2>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <br>
+    <a id="download192" download="icon-192.png">הורד 192x192</a>
+    <br><br>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    <br>
+    <a id="download512" download="icon-512.png">הורד 512x512</a>
+
+    <script>
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            const scale = size / 512;
+            
+            // Background
+            ctx.fillStyle = '#8B1538';
+            ctx.fillRect(0, 0, size, size);
+            
+            // White circle
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, 200*scale, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            
+            // Red circle
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, 190*scale, 0, Math.PI * 2);
+            ctx.fillStyle = '#C1272D';
+            ctx.fill();
+            
+            // House roof
+            ctx.beginPath();
+            ctx.moveTo(140*scale, 270*scale);
+            ctx.lineTo(256*scale, 154*scale);
+            ctx.lineTo(372*scale, 270*scale);
+            ctx.lineTo(372*scale, 250*scale);
+            ctx.lineTo(256*scale, 134*scale);
+            ctx.lineTo(140*scale, 250*scale);
+            ctx.closePath();
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            
+            // People (simplified as circles and rectangles)
+            // Left person
+            ctx.beginPath();
+            ctx.arc(206*scale, 276*scale, 18*scale, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            
+            ctx.fillRect(190*scale, 296*scale, 32*scale, 39*scale);
+            
+            // Right person
+            ctx.beginPath();
+            ctx.arc(306*scale, 276*scale, 18*scale, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillRect(290*scale, 296*scale, 32*scale, 39*scale);
+            
+            // Text
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${60*scale}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('מאיר', 256*scale, 370*scale);
+            ctx.fillText('פנים', 256*scale, 430*scale);
+            
+            return canvas.toDataURL('image/png');
+        }
+        
+        // Generate 192x192
+        const canvas192 = document.getElementById('canvas192');
+        const dataUrl192 = drawIcon(canvas192, 192);
+        document.getElementById('download192').href = dataUrl192;
+        
+        // Generate 512x512
+        const canvas512 = document.getElementById('canvas512');
+        const dataUrl512 = drawIcon(canvas512, 512);
+        document.getElementById('download512').href = dataUrl512;
+    </script>
+</body>
+</html>
