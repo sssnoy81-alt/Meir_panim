@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>התחברות - מאיר פנים</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="מערכת ניהול חלוקת חבילות מזון - בית תמחוי מאיר פנים">
+    <meta name="theme-color" content="#8B1538">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="מאיר פנים">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .logo-container {
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .login-header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .login-form {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #8B1538;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 21, 56, 0.4);
+        }
+
+        .error-message {
+            background: #fee;
+            border: 2px solid #f88;
+            color: #c00;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .back-btn {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #8B1538;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo-container">
+                <div class="logo">
+                    <svg width="72" height="72" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="47" fill="#C1272D"/>
+                        <circle cx="50" cy="50" r="47" fill="none" stroke="url(#loginGrad)" stroke-width="4"/>
+                        <defs>
+                            <linearGradient id="loginGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FFA500;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#FF1493;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#9333EA;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M 28 46 L 50 26 L 72 46 L 72 41 L 50 21 L 28 41 Z" fill="white"/>
+                        <g transform="translate(35, 41)">
+                            <circle cx="5" cy="5" r="3.5" fill="white"/>
+                            <path d="M 2 12 Q 2 9, 5 9 Q 8 9, 8 12 L 8 16 L 2 16 Z" fill="white"/>
+                        </g>
+                        <g transform="translate(55, 41)">
+                            <circle cx="5" cy="5" r="3.5" fill="white"/>
+                            <path d="M 2 12 Q 2 9, 5 9 Q 8 9, 8 12 L 8 16 L 2 16 Z" fill="white"/>
+                        </g>
+                        <text x="50" y="70" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">מאיר</text>
+                        <text x="50" y="85" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">פנים</text>
+                    </svg>
+                </div>
+            </div>
+            <h1>🔐 התחברות למערכת</h1>
+            <p>בית תמחוי מאיר פנים</p>
+        </div>
+
+        <div class="login-form">
+            <div id="errorMessage" class="error-message">
+                שם משתמש או סיסמה שגויים
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>שם משתמש</label>
+                    <input type="text" id="username" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label>סיסמה</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="login-btn">כניסה למערכת</button>
+            </form>
+
+            <a href="home.html" class="back-btn">← חזרה לדף הבית</a>
+        </div>
+    </div>
+
+    <!-- Include users configuration -->
+    <script src="users-config.js"></script>
+    
+    <script>
+        // Get target page from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetPage = urlParams.get('redirect') || 'admin-firebase.html';
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Authenticate using users-config.js
+            const authResult = authenticateUser(username, password);
+
+            if (authResult.success) {
+                // Store full session information
+                sessionStorage.setItem('meirPanimAuth', JSON.stringify(authResult.session));
+                sessionStorage.setItem('meirPanimAuthTime', new Date().getTime());
+                
+                // Redirect to target page
+                window.location.href = targetPage;
+            } else {
+                // Show error
+                errorMessage.textContent = authResult.message;
+                errorMessage.classList.add('show');
+                document.getElementById('password').value = '';
+                
+                // Hide error after 3 seconds
+                setTimeout(() => {
+                    errorMessage.classList.remove('show');
+                }, 3000);
+            }
+        });
+
+        // Check if already logged in
+        const authData = sessionStorage.getItem('meirPanimAuth');
+        const authTime = sessionStorage.getItem('meirPanimAuthTime');
+        
+        if (authData && authTime) {
+            // Check if login is still valid (24 hours)
+            const now = new Date().getTime();
+            const elapsed = now - parseInt(authTime);
+            const hours24 = 24 * 60 * 60 * 1000;
+            
+            if (elapsed < hours24) {
+                // Still logged in, redirect
+                window.location.href = targetPage;
+            } else {
+                // Login expired, clear
+                sessionStorage.removeItem('meirPanimAuth');
+                sessionStorage.removeItem('meirPanimAuthTime');
+            }
+        }
+    </script>
+</body>
+</html>
