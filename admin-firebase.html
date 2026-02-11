@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לוח בקרה - מאיר פנים</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="מערכת ניהול חלוקת חבילות מזון - בית תמחוי מאיר פנים">
+    <meta name="theme-color" content="#8B1538">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="מאיר פנים">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Include users configuration -->
+    <script src="users-config.js"></script>
+    
+    <script>
+        // Check authentication and get user session
+        const authData = sessionStorage.getItem('meirPanimAuth');
+        const authTime = sessionStorage.getItem('meirPanimAuthTime');
+        
+        let userSession = null;
+        
+        if (!authData || !authTime) {
+            window.location.href = 'login.html?redirect=admin-firebase.html';
+        } else {
+            const now = new Date().getTime();
+            const elapsed = now - parseInt(authTime);
+            const hours24 = 24 * 60 * 60 * 1000;
+            
+            if (elapsed >= hours24) {
+                sessionStorage.removeItem('meirPanimAuth');
+                sessionStorage.removeItem('meirPanimAuthTime');
+                window.location.href = 'login.html?redirect=admin-firebase.html';
+            } else {
+                userSession = JSON.parse(authData);
+                console.log('Logged in as:', userSession.hebrewName, '- Level:', userSession.level);
+            }
+        }
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.3);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #8B1538;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #8B1538;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            background: #e0e0e0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .branch-stats {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .branch-stats h2 {
+            color: #8B1538;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .branch-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 2fr;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+        }
+
+        .branch-row:first-child {
+            background: #f8f9fa;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        .branch-row:hover:not(:first-child) {
+            background: #f8f9fa;
+        }
+
+        .recent-registrations {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        }
+
+        .recent-registrations h2 {
+            color: #8B1538;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .registration-item {
+            padding: 15px;
+            border-right: 4px solid #8B1538;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .registration-item.delivered {
+            border-right-color: #28a745;
+            opacity: 0.7;
+        }
+
+        .reg-info {
+            font-size: 14px;
+        }
+
+        .reg-info strong {
+            color: #333;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .branch-row {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+
+            .registration-item {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .stat-number {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 לוח בקרה</h1>
+            <div class="user-info">
+                <div><strong id="userName"></strong></div>
+                <div id="userBranch" style="font-size: 14px; margin-top: 5px;"></div>
+            </div>
+            <button class="logout-btn" onclick="logout()">🚪 התנתק</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-number" id="totalFamilies">0</div>
+                <div class="stat-label">סה"כ משפחות רשומות</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-number" id="distributedPackages">0</div>
+                <div class="stat-label">חבילות שנמסרו</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-number" id="pendingPackages">0</div>
+                <div class="stat-label">ממתין למסירה</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-number" id="completionRate">0%</div>
+                <div class="stat-label">אחוז השלמה</div>
+                <div class="progress-bar-container">
+                    <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="branch-stats" id="branchStatsSection">
+            <h2>📍 סטטיסטיקות לפי סניף</h2>
+            <div id="branchStats">
+                <div class="loading">טוען נתונים...</div>
+            </div>
+        </div>
+
+        <div class="recent-registrations">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                <h2 style="margin: 0;">📋 רישומים אחרונים</h2>
+                <button onclick="exportAdminToExcel()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    📊 ייצא לאקסל
+                </button>
+            </div>
+            
+            <!-- Search Box -->
+            <div style="margin-bottom: 20px;">
+                <input 
+                    type="text" 
+                    id="adminSearchBox" 
+                    placeholder="🔍 חיפוש לפי מספר הזמנה (MP...)" 
+                    style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;"
+                    oninput="filterAdminRegistrations()">
+            </div>
+
+            <div id="recentRegistrations">
+                <div class="loading">טוען נתונים...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, doc, deleteDoc, query, where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmaAzUatTV97LwL4VoVEUrJoVpnF612ig",
+            authDomain: "meir-panim-f27c4.firebaseapp.com",
+            projectId: "meir-panim-f27c4",
+            storageBucket: "meir-panim-f27c4.firebasestorage.app",
+            messagingSenderId: "1031695732717",
+            appId: "1:1031695732717:web:eb13bc9f6ff0c80156cdd3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Global registrations storage for filtering
+        let allAdminRegistrations = [];
+
+        // Display user info
+        document.getElementById('userName').textContent = userSession.hebrewName;
+        if (userSession.branch) {
+            document.getElementById('userBranch').textContent = `סניף: ${userSession.branch}`;
+        } else {
+            document.getElementById('userBranch').textContent = `רמת הרשאה: ${userSession.level === 3 ? 'Super Admin' : 'Admin ראשי'}`;
+        }
+
+        // Logout function
+        window.logout = function() {
+            sessionStorage.removeItem('meirPanimAuth');
+            sessionStorage.removeItem('meirPanimAuthTime');
+            window.location.href = 'login.html';
+        };
+
+        // Load dashboard data
+        async function updateDashboard() {
+            try {
+                let querySnapshot;
+                
+                if (userSession.permissions.viewAll) {
+                    // Super admin / Main admin - see all
+                    querySnapshot = await getDocs(collection(db, 'registrations'));
+                } else {
+                    // Branch manager - filter by city
+                    const q = query(
+                        collection(db, 'registrations'),
+                        where('city', '==', userSession.branch)
+                    );
+                    querySnapshot = await getDocs(q);
+                }
+
+                const registrations = [];
+                querySnapshot.forEach((doc) => {
+                    registrations.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Store globally for filtering
+                allAdminRegistrations = registrations;
+
+                // Calculate statistics
+                const total = registrations.length;
+                const distributed = registrations.filter(r => r.packageReceived).length;
+                const pending = total - distributed;
+                const completionRate = total > 0 ? Math.round((distributed / total) * 100) : 0;
+
+                // Update display
+                document.getElementById('totalFamilies').textContent = total;
+                document.getElementById('distributedPackages').textContent = distributed;
+                document.getElementById('pendingPackages').textContent = pending;
+                document.getElementById('completionRate').textContent = completionRate + '%';
+
+                // Update progress bar
+                const progressBar = document.getElementById('progressBar');
+                progressBar.style.width = completionRate + '%';
+                progressBar.textContent = completionRate + '%';
+
+                // Update branch statistics
+                updateBranchStats(registrations);
+
+                // Update recent registrations
+                updateRecentRegistrations(registrations);
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        function updateBranchStats(registrations) {
+            const branchStatsDiv = document.getElementById('branchStats');
+            
+            // Only show branch stats for super admin and main admin
+            if (!userSession.permissions.viewAll) {
+                document.getElementById('branchStatsSection').style.display = 'none';
+                return;
+            }
+
+            const cities = ['ירושלים', 'צפת', 'דימונה', 'אור עקיבא', 'טבריה'];
+            
+            const branchData = cities.map(city => {
+                const cityRegs = registrations.filter(r => r.city === city);
+                const total = cityRegs.length;
+                const delivered = cityRegs.filter(r => r.packageReceived).length;
+                const pending = total - delivered;
+                const rate = total > 0 ? Math.round((delivered / total) * 100) : 0;
+                
+                return { city, total, delivered, pending, rate };
+            });
+
+            branchStatsDiv.innerHTML = `
+                <div class="branch-row">
+                    <div><strong>סניף</strong></div>
+                    <div><strong>סה"כ</strong></div>
+                    <div><strong>נמסר</strong></div>
+                    <div><strong>ממתין</strong></div>
+                    <div><strong>אחוז השלמה</strong></div>
+                </div>
+                ${branchData.map(branch => `
+                    <div class="branch-row">
+                        <div>${branch.city}</div>
+                        <div>${branch.total}</div>
+                        <div>${branch.delivered}</div>
+                        <div>${branch.pending}</div>
+                        <div>
+                            <div class="progress-bar-container" style="height: 20px;">
+                                <div class="progress-bar" style="width: ${branch.rate}%; font-size: 12px;">
+                                    ${branch.rate}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function updateRecentRegistrations(registrations) {
+            const recentDiv = document.getElementById('recentRegistrations');
+            
+            // Sort by registration date (newest first) and take last 10
+            const recent = registrations
+                .sort((a, b) => {
+                    const dateA = a.registrationDate?.toDate?.() || new Date(0);
+                    const dateB = b.registrationDate?.toDate?.() || new Date(0);
+                    return dateB - dateA;
+                })
+                .slice(0, 10);
+
+            if (recent.length === 0) {
+                recentDiv.innerHTML = '<div class="loading">אין רישומים עדיין</div>';
+                return;
+            }
+
+            recentDiv.innerHTML = recent.map(reg => `
+                <div class="registration-item ${reg.packageReceived ? 'delivered' : ''}" data-registration-number="${reg.registrationNumber || ''}">
+                    <div class="reg-info">
+                        <strong>${reg.registrationNumber}</strong><br>
+                        ${reg.fullName}
+                    </div>
+                    <div class="reg-info">
+                        <strong>עיר:</strong> ${reg.city}<br>
+                        <strong>סוג:</strong> ${reg.packageType}
+                    </div>
+                    <div class="reg-info">
+                        <strong>סטטוס:</strong><br>
+                        ${reg.packageReceived ? '✅ נמסר' : '⏳ ממתין'}
+                    </div>
+                    <div>
+                        ${userSession.permissions.delete ? 
+                            `<button class="delete-btn" onclick="deleteRegistration('${reg.id}', '${reg.fullName}')">🗑️ מחק</button>` 
+                            : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Delete registration (only for super admin)
+        window.deleteRegistration = async function(docId, name) {
+            if (!userSession.permissions.delete) {
+                alert('אין לך הרשאה למחוק רשומות');
+                return;
+            }
+
+            if (!confirm(`האם אתה בטוח שברצונך למחוק את הרישום של ${name}?\n\nפעולה זו אינה ניתנת לביטול!`)) {
+                return;
+            }
+
+            try {
+                await deleteDoc(doc(db, 'registrations', docId));
+                alert('הרישום נמחק בהצלחה');
+                updateDashboard();
+            } catch (error) {
+                alert('שגיאה במחיקה: ' + error.message);
+            }
+        };
+
+        // Filter registrations by search
+        window.filterAdminRegistrations = function() {
+            const searchTerm = document.getElementById('adminSearchBox').value.trim().toUpperCase();
+            
+            if (!searchTerm) {
+                updateRecentRegistrations(allAdminRegistrations);
+                return;
+            }
+
+            const filtered = allAdminRegistrations.filter(reg => {
+                const regNumber = (reg.registrationNumber || '').toUpperCase();
+                return regNumber.includes(searchTerm);
+            });
+
+            updateRecentRegistrations(filtered);
+        };
+
+        // Export admin data to Excel
+        window.exportAdminToExcel = function() {
+            if (allAdminRegistrations.length === 0) {
+                alert('אין נתונים לייצוא');
+                return;
+            }
+
+            // Prepare data for Excel
+            let csvContent = '\uFEFF'; // UTF-8 BOM for Hebrew support
+            csvContent += 'מספר הזמנה,שם,ת.ז,טלפון,עיר,סוג חבילה,סטטוס,נרשם ע"י,הערות\n';
+
+            allAdminRegistrations.forEach(reg => {
+                const status = reg.packageReceived ? 'נמסר' : 'ממתין';
+                const row = [
+                    reg.registrationNumber || '',
+                    reg.fullName || '',
+                    reg.idNumber || '',
+                    reg.phone || '',
+                    reg.city || '',
+                    reg.packageType || '',
+                    status,
+                    reg.registeredByName || '',
+                    (reg.notes || '').replace(/,/g, ';')
+                ].join(',');
+                csvContent += row + '\n';
+            });
+
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            const branchName = userSession.branch || 'כל_הסניפים';
+            const date = new Date().toISOString().split('T')[0];
+            const filename = `דוח_מלא_${branchName}_${date}.csv`;
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Load data on page load
+        updateDashboard();
+
+        // Refresh every 30 seconds
+        setInterval(updateDashboard, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>רישום למשפחות - בית תמחוי מאיר פנים</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="מערכת ניהול חלוקת חבילות מזון - בית תמחוי מאיר פנים">
+    <meta name="theme-color" content="#8B1538">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="מאיר פנים">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .form-section {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+
+        input[type="text"],
+        input[type="tel"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #8B1538;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 21, 56, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .info-box {
+            background: #fff5f7;
+            border-right: 4px solid #8B1538;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .info-box p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .barcode-container {
+            margin-top: 20px;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        #qrcode {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .print-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .print-btn:hover {
+            background: #218838;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <a href="home.html" style="display: block; cursor: pointer; text-decoration: none;">
+                    <div style="width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;">
+                        <svg width="72" height="72" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="47" fill="#C1272D"/>
+                        <circle cx="50" cy="50" r="47" fill="none" stroke="url(#regGrad)" stroke-width="4"/>
+                        <defs>
+                            <linearGradient id="regGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FFA500;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#FF1493;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#9333EA;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M 28 46 L 50 26 L 72 46 L 72 41 L 50 21 L 28 41 Z" fill="white"/>
+                        <g transform="translate(35, 41)">
+                            <circle cx="5" cy="5" r="3.5" fill="white"/>
+                            <path d="M 2 12 Q 2 9, 5 9 Q 8 9, 8 12 L 8 16 L 2 16 Z" fill="white"/>
+                        </g>
+                        <g transform="translate(55, 41)">
+                            <circle cx="5" cy="5" r="3.5" fill="white"/>
+                            <path d="M 2 12 Q 2 9, 5 9 Q 8 9, 8 12 L 8 16 L 2 16 Z" fill="white"/>
+                        </g>
+                        <text x="50" y="70" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">מאיר</text>
+                        <text x="50" y="85" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">פנים</text>
+                    </svg>
+                </div>
+                </a>
+                <div style="text-align: center;">
+                    <h1>בית תמחוי מאיר פנים</h1>
+                    <p style="font-size: 14px; margin-top: 5px; opacity: 0.95;">מחלקים לחיים תקווה ואהבה</p>
+                    <p>רישום לקבלת חבילת מזון לפסח תשפ"ה</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="info-box">
+                <p><strong>ברוכים הבאים למאיר פנים!</strong><br>
+                אנחנו כאן בשבילכם. אנא מלאו את הפרטים הבאים לצורך רישום למשפחתכם לקבלת חבילת מזון לחג הפסח. לאחר השלמת הרישום תקבלו ברקוד אישי שיאפשר לכם לאסוף את החבילה בקלות ובמהירות.</p>
+            </div>
+
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label>שם מלא <span class="required">*</span></label>
+                    <input type="text" id="fullName" name="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>מספר תעודת זהות <span class="required">*</span></label>
+                    <input type="text" id="idNumber" name="idNumber" pattern="[0-9]{9}" maxlength="9" required>
+                </div>
+
+                <div class="form-group">
+                    <label>מספר טלפון</label>
+                    <input type="tel" id="phone" name="phone" pattern="[0-9]{9,10}" placeholder="050-1234567">
+                </div>
+
+                <div class="form-group">
+                    <label>עיר <span class="required">*</span></label>
+                    <select id="city" name="city" required>
+                        <option value="">בחר עיר</option>
+                        <option value="ירושלים">ירושלים</option>
+                        <option value="צפת">צפת</option>
+                        <option value="דימונה">דימונה</option>
+                        <option value="אור עקיבא">אור עקיבא</option>
+                        <option value="טבריה">טבריה</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>סוג חבילה <span class="required">*</span></label>
+                    <select id="packageType" name="packageType" required>
+                        <option value="">בחר סוג חבילה</option>
+                        <option value="חבילת מזון">חבילת מזון</option>
+                        <option value="תלוש/שובר">תלוש/שובר</option>
+                        <option value="חבילה + שובר">חבילה + שובר</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>הערות (אופציונלי)</label>
+                    <input type="text" id="notes" name="notes" placeholder="למשל: צרכים מיוחדים, אלרגיות">
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">שלח רישום</button>
+            </form>
+
+            <div id="successMessage" class="success-message">
+                <h2>✅ נרשמת בהצלחה למאיר פנים!</h2>
+                <p style="font-size: 16px; margin: 10px 0;">ברוכים הבאים למשפחת מאיר פנים</p>
+                <p>מספר הרישום שלך: <strong id="registrationNumber"></strong></p>
+                <div class="barcode-container">
+                    <p><strong>מספר ההזמנה האישי שלך:</strong></p>
+                    <div id="qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
+                    <p style="margin-top: 10px; color: #666;">💡 שמור תמונה של המספר או שלח לעצמך ב-WhatsApp</p>
+                    <p style="color: #666;">הצג את המספר בעת איסוף החבילה</p>
+                    
+                    <!-- WhatsApp Button - Prominent placement -->
+                    <div style="text-align: center; margin: 20px 0;">
+                        <button id="whatsappBtn" style="background: #25D366; color: white; border: none; padding: 18px 40px; border-radius: 35px; font-size: 18px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4); transition: all 0.3s; border: 3px solid #1fb855;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(37, 211, 102, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(37, 211, 102, 0.4)';">
+                            <span style="font-size: 28px;">📱</span>
+                            <span>שלח לי ב-WhatsApp</span>
+                        </button>
+                    </div>
+                    
+                    <button class="print-btn" onclick="window.print()">🖨️ הדפס תלוש</button>
+                </div>
+                <p style="margin-top: 20px; font-size: 14px; color: #666;">
+                    נתראה בקרוב! צוות מאיר פנים ❤️
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code now generated via Google Charts API - no library needed -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Wait for QRCode library to load
+        // QR Code now generated via Google Charts API - no waiting needed
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmaAzUatTV97LwL4VoVEUrJoVpnF612ig",
+            authDomain: "meir-panim-f27c4.firebaseapp.com",
+            projectId: "meir-panim-f27c4",
+            storageBucket: "meir-panim-f27c4.firebasestorage.app",
+            messagingSenderId: "252083260218",
+            appId: "1:252083260218:web:ea5e1e072aed819b8d1e03",
+            measurementId: "G-VXGZ0RHHD5"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const registrationForm = document.getElementById('registrationForm');
+        const successMessage = document.getElementById('successMessage');
+        const registrationNumberEl = document.getElementById('registrationNumber');
+        const submitBtn = document.getElementById('submitBtn');
+
+        registrationForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // No need to wait for QR library anymore
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'שומר...';
+
+            // Generate registration number
+            const registrationNumber = 'MP' + Date.now().toString().slice(-8);
+
+            // Collect form data
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                idNumber: document.getElementById('idNumber').value,
+                phone: document.getElementById('phone').value || '',
+                city: document.getElementById('city').value,
+                packageType: document.getElementById('packageType').value,
+                notes: document.getElementById('notes').value || '',
+                registrationDate: serverTimestamp(),
+                registrationNumber: registrationNumber,
+                packageReceived: false,
+                receivedDate: null
+            };
+
+            try {
+                // Save to Firebase
+                await addDoc(collection(db, 'registrations'), formData);
+
+                // Show success message
+                registrationNumberEl.textContent = registrationNumber;
+                registrationForm.style.display = 'none';
+                successMessage.classList.add('show');
+
+                // Display registration number prominently instead of QR
+                const qrcodeDiv = document.getElementById('qrcode');
+                qrcodeDiv.innerHTML = `
+                    <div style="width: 280px; margin: 0 auto; border: 4px solid #8B1538; border-radius: 15px; padding: 30px 20px; background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%); box-shadow: 0 8px 20px rgba(0,0,0,0.15); text-align: center;">
+                        <div style="font-size: 16px; color: #666; margin-bottom: 15px; font-weight: 600;">📋 מספר ההזמנה שלך</div>
+                        <div style="font-size: 36px; font-weight: bold; color: #8B1538; letter-spacing: 2px; margin: 10px 0; word-break: break-all; line-height: 1.3;">${registrationNumber}</div>
+                        <div style="font-size: 14px; color: #999; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #ddd;">💡 הצג מספר זה בעמדת החלוקה</div>
+                    </div>
+                `;
+                
+                console.log('Registration number displayed:', registrationNumber);
+                
+                // Setup WhatsApp button
+                const whatsappBtn = document.getElementById('whatsappBtn');
+                const phoneNumber = formData.phone.replace(/\D/g, ''); // Remove non-digits
+                
+                // Get QR code as image
+                setTimeout(() => {
+                    const qrImage = qrcodeDiv.querySelector('img');
+                    const qrImageUrl = qrImage ? qrImage.src : '';
+                    
+                    // Create WhatsApp message
+                    const message = `שלום ${formData.fullName}! 👋
+
+✅ נרשמת בהצלחה למערכת מאיר פנים!
+
+📝 *מספר הזמנה שלך:* ${registrationNumber}
+
+📅 *פרטי הרישום:*
+👤 שם: ${formData.fullName}
+🆔 ת.ז: ${formData.idNumber}
+📦 סוג חבילה: ${formData.packageType}
+📱 טלפון: ${formData.phone}
+
+💡 *חשוב:*
+הצג את מספר ההזמנה (${registrationNumber}) בעמדת החלוקה.
+
+🏠 *בית תמחוי מאיר פנים*
+מחלקים לחיים תקווה ואהבה ❤️
+
+---
+ניתן גם לצלם את ה-QR Code שמוצג באתר לצורך איסוף מהיר יותר.`;
+
+                    whatsappBtn.onclick = () => {
+                        // Open WhatsApp with pre-filled message
+                        const encodedMessage = encodeURIComponent(message);
+                        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+                        window.open(whatsappUrl, '_blank');
+                    };
+                }, 500); // Wait for QR to render
+                
+            } catch (error) {
+                console.error('Error saving registration:', error);
+                alert('שגיאה בשמירת הרישום. אנא נסה שוב.\n\nפרטי השגיאה: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'שלח רישום';
+            }
+        });
+
+        // Print styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @media print {
+                body * {
+                    visibility: hidden;
+                }
+                .success-message, .success-message * {
+                    visibility: visible;
+                }
+                .success-message {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                }
+                .print-btn {
+                    display: none;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
