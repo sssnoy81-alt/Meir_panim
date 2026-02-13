@@ -1,685 +1,480 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="he">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>אזור מנהלי סניף - מאיר פנים</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>אזור מנהלי סניף - מאיר פנים</title>
 
-    <meta name="description" content="מערכת ניהול חלוקת חבילות מזון - בית תמחוי מאיר פנים">
-    <meta name="theme-color" content="#8B1538">
-    <link rel="manifest" href="manifest.json">
+  <meta name="description" content="מערכת ניהול חלוקת חבילות מזון - בית תמחוי מאיר פנים">
+  <meta name="theme-color" content="#8B1538">
+  <link rel="manifest" href="manifest.json">
 
-    <!-- Include users configuration -->
-    <script src="users-config.js"></script>
+  <script src="users-config.js"></script>
 
-    <script>
-        // Check authentication
-        const authData = sessionStorage.getItem('meirPanimAuth');
-        const authTime = sessionStorage.getItem('meirPanimAuthTime');
+  <script>
+    // Check authentication
+    const authData = sessionStorage.getItem('meirPanimAuth');
+    const authTime = sessionStorage.getItem('meirPanimAuthTime');
 
-        let userSession = null;
+    let userSession = null;
 
-        if (!authData || !authTime) {
-            window.location.href = 'login.html?redirect=volunteer-firebase.html';
-        } else {
-            const now = new Date().getTime();
-            const elapsed = now - parseInt(authTime);
-            const hours24 = 24 * 60 * 60 * 1000;
+    if (!authData || !authTime) {
+      window.location.href = 'login.html?redirect=volunteer-firebase.html';
+    } else {
+      const now = new Date().getTime();
+      const elapsed = now - parseInt(authTime);
+      const hours24 = 24 * 60 * 60 * 1000;
 
-            if (elapsed >= hours24) {
-                sessionStorage.removeItem('meirPanimAuth');
-                sessionStorage.removeItem('meirPanimAuthTime');
-                window.location.href = 'login.html?redirect=volunteer-firebase.html';
-            } else {
-                userSession = JSON.parse(authData);
-                console.log('Logged in as:', userSession.hebrewName, 'Branch:', userSession.branch);
-            }
-        }
-    </script>
+      if (elapsed >= hours24) {
+        sessionStorage.removeItem('meirPanimAuth');
+        sessionStorage.removeItem('meirPanimAuthTime');
+        window.location.href = 'login.html?redirect=volunteer-firebase.html';
+      } else {
+        userSession = JSON.parse(authData);
+        console.log('Logged in as:', userSession.hebrewName, 'Branch:', userSession.branch);
+      }
+    }
+  </script>
 
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-
-        .header {
-            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .header h1 { font-size: 28px; margin-bottom: 10px; }
-        .user-info {
-            background: rgba(255,255,255,0.2);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        .logout-btn {
-            background: rgba(255,255,255,0.3);
-            border: 2px solid white;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .logout-btn:hover { background: white; color: #8B1538; }
-
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab {
-            flex: 1;
-            padding: 15px;
-            background: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: 600;
-            color: #666;
-            transition: all 0.3s;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .tab.active {
-            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(139, 21, 56, 0.3);
-        }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .form-group { margin-bottom: 20px; }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #8B1538;
-        }
-        .required { color: #E4032E; }
-
-        .btn-primary {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .btn-primary:hover { transform: translateY(-2px); }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .registrations-list { max-height: 600px; overflow-y: auto; }
-        .registration-item {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border-left: 5px solid #8B1538;
-        }
-        .registration-item.delivered { border-left-color: #28a745; background: #e8f5e9; }
-        .registration-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .registration-number { font-size: 18px; font-weight: 700; color: #8B1538; }
-
-        .badge { padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 600; }
-        .badge-pending { background: #fff3cd; color: #856404; }
-        .badge-delivered { background: #d4edda; color: #155724; }
-
-        .registration-details { margin: 15px 0; line-height: 1.8; }
-        .registration-details div { margin-bottom: 5px; }
-
-        .btn-mark-delivered {
-            width: 100%;
-            padding: 12px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background 0.3s;
-        }
-        .btn-mark-delivered:hover { background: #218838; }
-
-        .search-box {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-        .search-box:focus { outline: none; border-color: #8B1538; }
-
-        .mini-dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .mini-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .mini-card-value { font-size: 36px; font-weight: 700; color: #8B1538; margin: 10px 0; }
-        .mini-card-label { font-size: 16px; color: #666; }
-
-        .empty-state { text-align: center; padding: 60px 20px; color: #999; }
-        .empty-state-icon { font-size: 64px; margin-bottom: 20px; }
-
-        .btn-export {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            transition: background 0.3s;
-        }
-        .btn-export:hover { background: #218838; }
-
-        .btn-small {
-            padding: 10px 14px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-        }
-        .btn-qr {
-            background: #0ea5e9;
-            color: #fff;
-            margin-top: 10px;
-        }
-        .btn-qr:hover { filter: brightness(0.95); }
-    </style>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);min-height:100vh;padding:20px}
+    .container{max-width:1200px;margin:0 auto}
+    .header{background:linear-gradient(135deg,#8B1538 0%,#E4032E 100%);color:#fff;padding:20px 30px;border-radius:15px;margin-bottom:30px;box-shadow:0 10px 30px rgba(0,0,0,.2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+    .header h1{font-size:28px;margin-bottom:10px}
+    .user-info{background:rgba(255,255,255,.2);padding:10px 20px;border-radius:8px;font-size:16px}
+    .logout-btn{background:rgba(255,255,255,.3);border:2px solid #fff;color:#fff;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;transition:.3s}
+    .logout-btn:hover{background:#fff;color:#8B1538}
+    .tabs{display:flex;gap:10px;margin-bottom:20px}
+    .tab{flex:1;padding:15px;background:#fff;border:none;border-radius:10px;cursor:pointer;font-size:18px;font-weight:600;color:#666;transition:.3s;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+    .tab.active{background:linear-gradient(135deg,#8B1538 0%,#E4032E 100%);color:#fff;transform:translateY(-2px);box-shadow:0 4px 15px rgba(139,21,56,.3)}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .card{background:#fff;border-radius:15px;padding:30px;box-shadow:0 5px 20px rgba(0,0,0,.1);margin-bottom:20px}
+    .form-group{margin-bottom:20px}
+    .form-group label{display:block;margin-bottom:8px;font-weight:600;color:#333}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:16px;transition:border-color .3s}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#8B1538}
+    .required{color:#E4032E}
+    .btn-primary{width:100%;padding:15px;background:linear-gradient(135deg,#8B1538 0%,#E4032E 100%);color:#fff;border:none;border-radius:10px;font-size:18px;font-weight:600;cursor:pointer;transition:transform .2s}
+    .btn-primary:hover{transform:translateY(-2px)}
+    .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+    .registrations-list{max-height:600px;overflow-y:auto}
+    .registration-item{background:#f8f9fa;padding:20px;border-radius:10px;margin-bottom:15px;border-left:5px solid #8B1538}
+    .registration-item.delivered{border-left-color:#28a745;background:#e8f5e9}
+    .registration-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .registration-number{font-size:18px;font-weight:700;color:#8B1538}
+    .badge{padding:5px 15px;border-radius:20px;font-size:14px;font-weight:600}
+    .badge-pending{background:#fff3cd;color:#856404}
+    .badge-delivered{background:#d4edda;color:#155724}
+    .registration-details{margin:15px 0;line-height:1.8}
+    .registration-details div{margin-bottom:5px}
+    .btn-mark-delivered{width:100%;padding:12px;background:#28a745;color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;margin-top:15px;transition:background .3s}
+    .btn-mark-delivered:hover{background:#218838}
+    .search-box{width:100%;padding:15px;border:2px solid #e0e0e0;border-radius:10px;font-size:16px;margin-bottom:20px}
+    .search-box:focus{outline:none;border-color:#8B1538}
+    .mini-dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:30px}
+    .mini-card{background:#fff;padding:20px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.1);text-align:center}
+    .mini-card-value{font-size:36px;font-weight:700;color:#8B1538;margin:10px 0}
+    .mini-card-label{font-size:16px;color:#666}
+    .success-message{background:#d4edda;color:#155724;padding:15px;border-radius:8px;margin-bottom:20px;display:none;text-align:center;font-weight:600}
+    .empty-state{text-align:center;padding:60px 20px;color:#999}
+    .empty-state-icon{font-size:64px;margin-bottom:20px}
+    .btn-export{background:#28a745;color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:16px;font-weight:600;margin-bottom:20px;transition:background .3s}
+    .btn-export:hover{background:#218838}
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">
-            <div>
-                <h1>🏠 אזור מנהלי סניף</h1>
-                <div class="user-info">
-                    👤 <span id="userName"></span> | 📍 <span id="userBranch"></span>
-                </div>
-            </div>
-            <button class="logout-btn" onclick="logout()">🚪 התנתק</button>
-        </div>
-
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('register')">➕ רישום חדש</button>
-            <button class="tab" onclick="switchTab('view')">📋 צפייה ברשומים</button>
-        </div>
-
-        <!-- Registration Tab -->
-        <div id="registerTab" class="tab-content active">
-            <div class="card">
-                <h2 style="margin-bottom: 20px; color: #8B1538;">רישום משפחה חדשה</h2>
-
-                <div id="successMessage" class="success-message"></div>
-
-                <form id="registrationForm">
-                    <div class="form-group">
-                        <label>שם מלא <span class="required">*</span></label>
-                        <input type="text" id="fullName" required placeholder="הכנס שם מלא">
-                    </div>
-
-                    <div class="form-group">
-                        <label>מספר תעודת זהות <span class="required">*</span></label>
-                        <input type="text" id="idNumber" required placeholder="9 ספרות" maxlength="9">
-                    </div>
-
-                    <div class="form-group">
-                        <label>מספר טלפון (לשליחת SMS)</label>
-                        <input type="tel" id="phone" placeholder="050-1234567">
-                    </div>
-
-                    <div class="form-group">
-                        <label>עיר <span class="required">*</span></label>
-                        <select id="city" required>
-                            <option value="">בחר עיר</option>
-                            <option value="ירושלים">ירושלים</option>
-                            <option value="צפת">צפת</option>
-                            <option value="דימונה">דימונה</option>
-                            <option value="אור עקיבא">אור עקיבא</option>
-                            <option value="טבריה">טבריה</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>סוג חבילה <span class="required">*</span></label>
-                        <select id="packageType" required>
-                            <option value="">בחר סוג חבילה</option>
-                            <option value="חבילת מזון">חבילת מזון</option>
-                            <option value="תלוש/שובר">תלוש/שובר</option>
-                            <option value="חבילה + שובר">חבילה + שובר</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>הערות</label>
-                        <textarea id="notes" rows="3" placeholder="צרכים מיוחדים, אלרגיות וכו'"></textarea>
-                    </div>
-
-                    <button type="submit" class="btn-primary" id="submitBtn">שמור רישום</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- View Tab -->
-        <div id="viewTab" class="tab-content">
-            <div class="card">
-                <h2 style="margin-bottom: 20px; color: #8B1538;">רשומים בסניף</h2>
-
-                <div class="mini-dashboard">
-                    <div class="mini-card">
-                        <div class="mini-card-label">סה"כ רשומים</div>
-                        <div class="mini-card-value" id="miniTotalCount">0</div>
-                    </div>
-                    <div class="mini-card">
-                        <div class="mini-card-label">ממתינים למסירה</div>
-                        <div class="mini-card-value" id="miniPendingCount" style="color: #ffc107;">0</div>
-                    </div>
-                    <div class="mini-card">
-                        <div class="mini-card-label">נמסרו</div>
-                        <div class="mini-card-value" id="miniDeliveredCount" style="color: #28a745;">0</div>
-                    </div>
-                </div>
-
-                <button class="btn-export" onclick="exportToExcel()">📊 ייצוא לאקסל</button>
-
-                <input type="text" id="searchBox" class="search-box" placeholder="🔍 חיפוש לפי מספר הזמנה..." oninput="filterRegistrations()">
-
-                <div class="registrations-list" id="registrationsList">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⏳</div>
-                        <p>טוען...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>🏠 אזור מנהלי סניף</h1>
+      <div class="user-info">
+        👤 <span id="userName"></span> | 📍 <span id="userBranch"></span>
+      </div>
     </div>
+    <button class="logout-btn" onclick="logout()">🚪 התנתק</button>
+  </div>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, query, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('register')">➕ רישום חדש</button>
+    <button class="tab" onclick="switchTab('view')">📋 צפייה ברשומים</button>
+  </div>
 
-        // ✅ Twilio SMS Worker (Cloudflare Worker)
-        const SMS_WORKER_URL = 'https://meir-panim-sms.sssnoy81.workers.dev/';
+  <div id="registerTab" class="tab-content active">
+    <div class="card">
+      <h2 style="margin-bottom: 20px; color: #8B1538;">רישום משפחה חדשה</h2>
+      <div id="successMessage" class="success-message"></div>
 
-        // ✅ Base URL for QR link (adjust if your repo URL changes)
-        const QR_BASE_URL = 'https://sssnoy81-alt.github.io/Meir_panim/qr.html?code=';
+      <form id="registrationForm">
+        <div class="form-group">
+          <label>שם מלא <span class="required">*</span></label>
+          <input type="text" id="fullName" required placeholder="הכנס שם מלא">
+        </div>
 
-        function formatIsraeliPhoneToE164(raw) {
-            if (!raw) return '';
-            let digits = String(raw).replace(/\D/g, '');
-            if (!digits) return '';
-            // If user wrote 05xxxxxxxx
-            if (digits.startsWith('0')) return '+972' + digits.substring(1);
-            // If already includes country code without +
-            if (digits.startsWith('972')) return '+' + digits;
-            // fallback: assume local without leading 0 (rare)
-            if (digits.length === 9) return '+972' + digits;
-            return digits.startsWith('+') ? digits : '+' + digits; // last resort
-        }
+        <div class="form-group">
+          <label>מספר תעודת זהות <span class="required">*</span></label>
+          <input type="text" id="idNumber" required placeholder="9 ספרות" maxlength="9">
+        </div>
 
-        async function sendSms(toE164, body) {
-            if (!toE164) return;
-            const res = await fetch(SMS_WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ to: toE164, body })
-            });
-            if (!res.ok) {
-                const txt = await res.text().catch(() => '');
-                throw new Error('SMS failed: ' + res.status + ' ' + txt);
-            }
-        }
+        <div class="form-group">
+          <label>מספר טלפון (לשליחת SMS)</label>
+          <input type="tel" id="phone" placeholder="050-1234567">
+        </div>
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAmnAzUatfV97LwL4VoVEUrJoVnnF6I2J4",
-            authDomain: "meir-panim-f27c4.firebaseapp.com",
-            projectId: "meir-panim-f27c4",
-            storageBucket: "meir-panim-f27c4.firebasestorage.app",
-            messagingSenderId: "252083260218",
-            appId: "1:252083260218:web:ea5e1ef072ae048191dd1e03",
-            measurementId: "G-VXGZ0RHHD5"
-        };
+        <div class="form-group">
+          <label>עיר <span class="required">*</span></label>
+          <select id="city" required>
+            <option value="">בחר עיר</option>
+            <option value="ירושלים">ירושלים</option>
+            <option value="צפת">צפת</option>
+            <option value="דימונה">דימונה</option>
+            <option value="אור עקיבא">אור עקיבא</option>
+            <option value="טבריה">טבריה</option>
+          </select>
+        </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        <div class="form-group">
+          <label>סוג חבילה <span class="required">*</span></label>
+          <select id="packageType" required>
+            <option value="">בחר סוג חבילה</option>
+            <option value="חבילת מזון">חבילת מזון</option>
+            <option value="תלוש/שובר">תלוש/שובר</option>
+            <option value="חבילה + שובר">חבילה + שובר</option>
+          </select>
+        </div>
 
-        // Display user info
-        document.getElementById('userName').textContent = userSession.hebrewName;
-        document.getElementById('userBranch').textContent = userSession.branch || 'כל הסניפים';
+        <div class="form-group">
+          <label>הערות</label>
+          <textarea id="notes" rows="3" placeholder="צרכים מיוחדים, אלרגיות וכו'"></textarea>
+        </div>
 
-        // Logout
-        window.logout = function() {
-            sessionStorage.removeItem('meirPanimAuth');
-            sessionStorage.removeItem('meirPanimAuthTime');
-            window.location.href = 'login.html';
-        };
+        <button type="submit" class="btn-primary" id="submitBtn">שמור רישום</button>
+      </form>
+    </div>
+  </div>
 
-        // Tab switching
-        window.switchTab = function(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+  <div id="viewTab" class="tab-content">
+    <div class="card">
+      <h2 style="margin-bottom: 20px; color: #8B1538;">רשומים בסניף</h2>
 
-            if (tabName === 'register') {
-                document.querySelector('.tab:nth-child(1)').classList.add('active');
-                document.getElementById('registerTab').classList.add('active');
-            } else {
-                document.querySelector('.tab:nth-child(2)').classList.add('active');
-                document.getElementById('viewTab').classList.add('active');
-                loadRegistrations();
-            }
-        };
+      <div class="mini-dashboard">
+        <div class="mini-card">
+          <div class="mini-card-label">סה"כ רשומים</div>
+          <div class="mini-card-value" id="miniTotalCount">0</div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-card-label">ממתינים למסירה</div>
+          <div class="mini-card-value" id="miniPendingCount" style="color:#ffc107;">0</div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-card-label">נמסרו</div>
+          <div class="mini-card-value" id="miniDeliveredCount" style="color:#28a745;">0</div>
+        </div>
+      </div>
 
-        // Registration form
-        const registrationForm = document.getElementById('registrationForm');
-        const submitBtn = document.getElementById('submitBtn');
+      <button class="btn-export" onclick="exportToExcel()">📊 ייצוא לאקסל</button>
 
-        registrationForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
+      <input type="text" id="searchBox" class="search-box" placeholder="🔍 חיפוש לפי מספר הזמנה..." oninput="filterRegistrations()">
 
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'שומר...';
+      <div class="registrations-list" id="registrationsList">
+        <div class="empty-state">
+          <div class="empty-state-icon">⏳</div>
+          <p>טוען...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-            const registrationNumber = 'MP' + Date.now().toString().slice(-8);
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, query, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-            const formData = {
-                fullName: document.getElementById('fullName').value,
-                idNumber: document.getElementById('idNumber').value,
-                phone: document.getElementById('phone').value || '',
-                city: document.getElementById('city').value,
-                packageType: document.getElementById('packageType').value,
-                notes: document.getElementById('notes').value || '',
-                registrationDate: serverTimestamp(),
-                registrationNumber: registrationNumber,
-                packageReceived: false,
-                receivedDate: null,
-                registeredBy: userSession.username,
-                registeredByName: userSession.hebrewName
-            };
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAmnAzUatfV97LwL4VoVEUrJoVnnF6I2J4",
+    authDomain: "meir-panim-f27c4.firebaseapp.com",
+    projectId: "meir-panim-f27c4",
+    storageBucket: "meir-panim-f27c4.firebasestorage.app",
+    messagingSenderId: "252083260218",
+    appId: "1:252083260218:web:ea5e1ef072ae048191dd1e03",
+    measurementId: "G-VXGZ0RHHD5"
+  };
 
-            try {
-                await addDoc(collection(db, 'registrations'), formData);
+  const SMS_WORKER_URL = "https://meir-panim-sms.sssnoy81.workers.dev/";
 
-                const successMsg = document.getElementById('successMessage');
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-                // ✅ Send SMS (if phone exists)
-                if (formData.phone) {
-                    const toE164 = formatIsraeliPhoneToE164(formData.phone);
-                    const qrLink = QR_BASE_URL + encodeURIComponent(registrationNumber);
+  document.getElementById('userName').textContent = userSession.hebrewName;
+  document.getElementById('userBranch').textContent = userSession.branch || 'כל הסניפים';
 
-                    const smsBody =
-`מאיר פנים
-נרשמת בהצלחה ✅
+  window.logout = function() {
+    sessionStorage.removeItem('meirPanimAuth');
+    sessionStorage.removeItem('meirPanimAuthTime');
+    window.location.href = 'login.html';
+  };
 
-מספר הזמנה:
-${registrationNumber}
+  window.switchTab = function(tabName) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
 
-לצפייה/סריקת QR:
+    if (tabName === 'register') {
+      document.querySelector('.tab:nth-child(1)').classList.add('active');
+      document.getElementById('registerTab').classList.add('active');
+    } else {
+      document.querySelector('.tab:nth-child(2)').classList.add('active');
+      document.getElementById('viewTab').classList.add('active');
+      loadRegistrations();
+    }
+  };
+
+  function formatILPhoneToE164(raw) {
+    if (!raw) return "";
+    let p = raw.replace(/\D/g, "");
+    if (!p) return "";
+    if (p.startsWith("0")) return "+972" + p.substring(1);
+    if (p.startsWith("972")) return "+" + p;
+    if (p.startsWith("+")) return p;
+    return "+972" + p;
+  }
+
+  async function sendSms(toE164, body) {
+    if (!toE164) return;
+    await fetch(SMS_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ to: toE164, body })
+    });
+  }
+
+  const registrationForm = document.getElementById('registrationForm');
+  const submitBtn = document.getElementById('submitBtn');
+
+  registrationForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'שומר...';
+
+    const registrationNumber = 'MP' + Date.now().toString().slice(-8);
+
+    const formData = {
+      fullName: document.getElementById('fullName').value,
+      idNumber: document.getElementById('idNumber').value,
+      phone: document.getElementById('phone').value || '',
+      city: document.getElementById('city').value,
+      packageType: document.getElementById('packageType').value,
+      notes: document.getElementById('notes').value || '',
+      registrationDate: serverTimestamp(),
+      registrationNumber,
+      packageReceived: false,
+      receivedDate: null,
+      registeredBy: userSession.username,
+      registeredByName: userSession.hebrewName
+    };
+
+    try {
+      await addDoc(collection(db, 'registrations'), formData);
+
+      const successMsg = document.getElementById('successMessage');
+      successMsg.textContent = `✅ נרשם בהצלחה! מספר הזמנה: ${registrationNumber}`;
+      successMsg.style.display = 'block';
+
+      // ✅ SMS (אם הוזן טלפון)
+      if (formData.phone) {
+        const to = formatILPhoneToE164(formData.phone);
+        const qrLink = `https://sssnoy81-alt.github.io/Meir_panim/qr.html?code=${encodeURIComponent(registrationNumber)}`;
+
+        const smsBody =
+`מאיר פנים ✅
+מספר ההזמנה שלך: ${registrationNumber}
+
+לסריקת QR:
 ${qrLink}
 
-שמור הודעה זו והצג את המספר בעמדת החלוקה.`;
+שמור הודעה זו והצג בעמדת החלוקה.`;
 
-                    await sendSms(toE164, smsBody);
+        await sendSms(to, smsBody);
+      }
 
-                    successMsg.innerHTML =
-                        `✅ נרשם בהצלחה! מספר הזמנה: <b>${registrationNumber}</b><br>` +
-                        `📩 נשלח SMS ללקוח.<br>` +
-                        `<a href="${qrLink}" target="_blank" style="display:inline-block;margin-top:10px;">
-                            <button class="btn-small btn-qr">פתח QR להזמנה</button>
-                         </a>`;
-                } else {
-                    successMsg.textContent = `✅ נרשם בהצלחה! מספר הזמנה: ${registrationNumber} (לא הוזן טלפון, לכן לא נשלח SMS)`;
-                }
+      e.target.reset();
+      setTimeout(() => { successMsg.style.display = 'none'; }, 5000);
 
-                successMsg.style.display = 'block';
-                e.target.reset();
+    } catch (error) {
+      console.error('Error:', error);
+      alert('שגיאה בשמירה/שליחה. נסה שוב.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'שמור רישום';
+    }
+  });
 
-                setTimeout(() => { successMsg.style.display = 'none'; }, 8000);
+  let allRegistrations = [];
 
-            } catch (error) {
-                console.error('Error:', error);
-                alert('שגיאה בשמירה/שליחה. בדוק קונסול.');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'שמור רישום';
-            }
-        });
+  async function loadRegistrations() {
+    const listDiv = document.getElementById('registrationsList');
+    listDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><p>טוען...</p></div>';
 
-        // Load registrations
-        let allRegistrations = [];
+    try {
+      let querySnapshot;
 
-        async function loadRegistrations() {
-            const listDiv = document.getElementById('registrationsList');
-            listDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><p>טוען...</p></div>';
+      if (userSession.permissions.viewAll) {
+        querySnapshot = await getDocs(collection(db, 'registrations'));
+      } else {
+        const q = query(collection(db, 'registrations'), where('city', '==', userSession.branch));
+        querySnapshot = await getDocs(q);
+      }
 
-            try {
-                let querySnapshot;
+      allRegistrations = [];
+      querySnapshot.forEach((d) => allRegistrations.push({ id: d.id, ...d.data() }));
 
-                if (userSession.permissions.viewAll) {
-                    querySnapshot = await getDocs(collection(db, 'registrations'));
-                } else {
-                    const q = query(
-                        collection(db, 'registrations'),
-                        where('city', '==', userSession.branch)
-                    );
-                    querySnapshot = await getDocs(q);
-                }
+      updateMiniDashboard();
 
-                allRegistrations = [];
-                querySnapshot.forEach((d) => {
-                    allRegistrations.push({ id: d.id, ...d.data() });
-                });
+      if (allRegistrations.length === 0) {
+        listDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><p>אין רשומים עדיין</p></div>';
+        return;
+      }
 
-                updateMiniDashboard();
+      displayRegistrations(allRegistrations);
 
-                if (allRegistrations.length === 0) {
-                    listDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><p>אין רשומים עדיין</p></div>';
-                    return;
-                }
+    } catch (error) {
+      console.error('Error loading registrations:', error);
+      listDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><p>שגיאה בטעינת נתונים</p></div>';
+    }
+  }
 
-                displayRegistrations(allRegistrations);
+  function updateMiniDashboard() {
+    const total = allRegistrations.length;
+    const delivered = allRegistrations.filter(r => r.packageReceived).length;
+    const pending = total - delivered;
 
-            } catch (error) {
-                console.error('Error loading registrations:', error);
-                listDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><p>שגיאה בטעינת נתונים</p></div>';
-            }
-        }
+    document.getElementById('miniTotalCount').textContent = total;
+    document.getElementById('miniPendingCount').textContent = pending;
+    document.getElementById('miniDeliveredCount').textContent = delivered;
+  }
 
-        function updateMiniDashboard() {
-            const total = allRegistrations.length;
-            const delivered = allRegistrations.filter(r => r.packageReceived).length;
-            const pending = total - delivered;
+  function displayRegistrations(registrations) {
+    const listDiv = document.getElementById('registrationsList');
 
-            document.getElementById('miniTotalCount').textContent = total;
-            document.getElementById('miniPendingCount').textContent = pending;
-            document.getElementById('miniDeliveredCount').textContent = delivered;
-        }
+    registrations.sort((a, b) => {
+      if (!a.registrationDate || !b.registrationDate) return 0;
+      return b.registrationDate.seconds - a.registrationDate.seconds;
+    });
 
-        function displayRegistrations(registrations) {
-            const listDiv = document.getElementById('registrationsList');
+    let html = '';
+    registrations.forEach(reg => {
+      const status = reg.packageReceived ? 'delivered' : 'pending';
+      const statusBadge = reg.packageReceived
+        ? '<span class="badge badge-delivered">✅ נמסר</span>'
+        : '<span class="badge badge-pending">⏳ ממתין</span>';
 
-            registrations.sort((a, b) => {
-                if (!a.registrationDate || !b.registrationDate) return 0;
-                return b.registrationDate.seconds - a.registrationDate.seconds;
-            });
+      html += `
+        <div class="registration-item ${status}" data-registration-number="${reg.registrationNumber || ''}">
+          <div class="registration-header">
+            <div class="registration-number">${reg.registrationNumber || 'לא זמין'}</div>
+            ${statusBadge}
+          </div>
+          <div class="registration-details">
+            <div><strong>👤 שם:</strong> ${reg.fullName}</div>
+            <div><strong>🆔 ת.ז:</strong> ${reg.idNumber}</div>
+            <div><strong>📦 סוג:</strong> ${reg.packageType || 'לא צוין'}</div>
+            <div><strong>🏙️ עיר:</strong> ${reg.city}</div>
+            ${reg.phone ? `<div><strong>📱 טלפון:</strong> ${reg.phone}</div>` : ''}
+            ${reg.notes ? `<div><strong>📝 הערות:</strong> ${reg.notes}</div>` : ''}
+          </div>
+          ${!reg.packageReceived ? `
+            <button class="btn-mark-delivered" onclick="markAsDelivered('${reg.id}', '${reg.fullName}', '${reg.phone || ''}', '${reg.city}', '${reg.registrationNumber || ''}')">
+              ✅ סמן כנמסר
+            </button>
+          ` : ''}
+        </div>
+      `;
+    });
 
-            let html = '';
-            registrations.forEach(reg => {
-                const status = reg.packageReceived ? 'delivered' : 'pending';
-                const statusBadge = reg.packageReceived ?
-                    '<span class="badge badge-delivered">✅ נמסר</span>' :
-                    '<span class="badge badge-pending">⏳ ממתין</span>';
+    listDiv.innerHTML = html || '<div class="empty-state"><div class="empty-state-icon">📋</div><p>לא נמצאו תוצאות</p></div>';
+  }
 
-                const qrLink = QR_BASE_URL + encodeURIComponent(reg.registrationNumber || '');
+  window.filterRegistrations = function() {
+    const searchTerm = document.getElementById('searchBox').value.trim().toUpperCase();
+    if (!searchTerm) return displayRegistrations(allRegistrations);
 
-                html += `
-                    <div class="registration-item ${status}" data-registration-number="${reg.registrationNumber || ''}">
-                        <div class="registration-header">
-                            <div class="registration-number">${reg.registrationNumber || 'לא זמין'}</div>
-                            ${statusBadge}
-                        </div>
-                        <div class="registration-details">
-                            <div><strong>👤 שם:</strong> ${reg.fullName || ''}</div>
-                            <div><strong>🆔 ת.ז:</strong> ${reg.idNumber || ''}</div>
-                            <div><strong>📦 סוג:</strong> ${reg.packageType || 'לא צוין'}</div>
-                            <div><strong>🏙️ עיר:</strong> ${reg.city || ''}</div>
-                            ${reg.phone ? `<div><strong>📱 טלפון:</strong> ${reg.phone}</div>` : ''}
-                            ${reg.notes ? `<div><strong>📝 הערות:</strong> ${reg.notes}</div>` : ''}
-                            ${reg.registrationNumber ? `
-                                <a href="${qrLink}" target="_blank" style="display:inline-block;margin-top:8px;">
-                                    <button class="btn-small btn-qr">פתח QR להזמנה</button>
-                                </a>
-                            ` : ''}
-                        </div>
-                        ${!reg.packageReceived ? `
-                            <button class="btn-mark-delivered" onclick="markAsDelivered('${reg.id}')">
-                                ✅ סמן כנמסר
-                            </button>
-                        ` : ''}
-                    </div>
-                `;
-            });
+    const filtered = allRegistrations.filter(reg => (reg.registrationNumber || '').toUpperCase().includes(searchTerm));
+    displayRegistrations(filtered);
+  };
 
-            listDiv.innerHTML = html || '<div class="empty-state"><div class="empty-state-icon">📋</div><p>לא נמצאו תוצאות</p></div>';
-        }
+  window.exportToExcel = function() {
+    if (allRegistrations.length === 0) return alert('אין נתונים לייצוא');
 
-        window.filterRegistrations = function() {
-            const searchTerm = document.getElementById('searchBox').value.trim().toUpperCase();
-            if (!searchTerm) {
-                displayRegistrations(allRegistrations);
-                return;
-            }
-            const filtered = allRegistrations.filter(reg => {
-                const regNumber = (reg.registrationNumber || '').toUpperCase();
-                return regNumber.includes(searchTerm);
-            });
-            displayRegistrations(filtered);
-        };
+    let csvContent = '\uFEFF';
+    csvContent += 'מספר הזמנה,שם,ת.ז,טלפון,עיר,סוג חבילה,סטטוס,הערות\n';
 
-        window.exportToExcel = function() {
-            if (allRegistrations.length === 0) {
-                alert('אין נתונים לייצוא');
-                return;
-            }
+    allRegistrations.forEach(reg => {
+      const status = reg.packageReceived ? 'נמסר' : 'ממתין';
+      const row = [
+        reg.registrationNumber || '',
+        reg.fullName || '',
+        reg.idNumber || '',
+        reg.phone || '',
+        reg.city || '',
+        reg.packageType || '',
+        status,
+        (reg.notes || '').replace(/,/g, ';')
+      ].join(',');
+      csvContent += row + '\n';
+    });
 
-            let csvContent = '\uFEFF';
-            csvContent += 'מספר הזמנה,שם,ת.ז,טלפון,עיר,סוג חבילה,סטטוס,הערות\n';
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
 
-            allRegistrations.forEach(reg => {
-                const status = reg.packageReceived ? 'נמסר' : 'ממתין';
-                const row = [
-                    reg.registrationNumber || '',
-                    reg.fullName || '',
-                    reg.idNumber || '',
-                    reg.phone || '',
-                    reg.city || '',
-                    reg.packageType || '',
-                    status,
-                    (reg.notes || '').replace(/,/g, ';')
-                ].join(',');
-                csvContent += row + '\n';
-            });
+    const branchName = userSession.branch || 'כל_הסניפים';
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `רשומים_${branchName}_${date}.csv`;
 
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-            const branchName = userSession.branch || 'כל_הסניפים';
-            const date = new Date().toISOString().split('T')[0];
-            const filename = `רשומים_${branchName}_${date}.csv`;
+  // ✅ Mark as delivered (with optional SMS to client)
+  window.markAsDelivered = async function(docId, clientName, clientPhone, city, regNumber) {
+    if (!confirm('לסמן חבילה זו כנמסרה?')) return;
 
-            link.setAttribute('href', url);
-            link.setAttribute('download', filename);
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        };
+    try {
+      await updateDoc(doc(db, 'registrations', docId), {
+        packageReceived: true,
+        receivedDate: serverTimestamp()
+      });
 
-        // ✅ Mark as delivered (no WhatsApp)
-        window.markAsDelivered = async function(docId) {
-            if (!confirm('לסמן חבילה זו כנמסרה?')) return;
+      if (clientPhone) {
+        const to = formatILPhoneToE164(clientPhone);
+        const qrLink = `https://sssnoy81-alt.github.io/Meir_panim/qr.html?code=${encodeURIComponent(regNumber)}`;
 
-            try {
-                await updateDoc(doc(db, 'registrations', docId), {
-                    packageReceived: true,
-                    receivedDate: serverTimestamp()
-                });
-                loadRegistrations();
-            } catch (error) {
-                console.error('Error:', error);
-                alert('שגיאה בעדכון');
-            }
-        };
-    </script>
+        const smsBody =
+`מאיר פנים ✅
+החבילה סומנה כנמסרה.
+
+מספר הזמנה: ${regNumber}
+לסריקת QR:
+${qrLink}
+
+תודה ובריאות!`;
+
+        await sendSms(to, smsBody);
+      }
+
+      loadRegistrations();
+    } catch (error) {
+      console.error('Error:', error);
+      alert('שגיאה בעדכון');
+    }
+  };
+</script>
 </body>
 </html>
