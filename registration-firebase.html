@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>רישום למשפחות - בית תמחוי מאיר פנים</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#8B1538 0%,#E4032E 100%);
+    min-height:100vh;
+    padding:20px;
+}
+.container{
+    max-width:600px;
+    margin:auto;
+    background:white;
+    border-radius:20px;
+    padding:30px;
+}
+.submit-btn{
+    width:100%;
+    padding:15px;
+    background:#8B1538;
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+    cursor:pointer;
+}
+.success-message{
+    display:none;
+    background:#d4edda;
+    padding:20px;
+    border-radius:10px;
+    margin-top:20px;
+    text-align:center;
+}
+.success-message.show{
+    display:block;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>רישום משפחות — מאיר פנים</h2>
+
+<form id="registrationForm">
+
+<input id="fullName" required placeholder="שם מלא"><br><br>
+<input id="idNumber" required placeholder="תעודת זהות"><br><br>
+<input id="phone" required placeholder="טלפון"><br><br>
+
+<select id="city" required>
+<option value="">בחר עיר</option>
+<option>ירושלים</option>
+<option>צפת</option>
+<option>דימונה</option>
+<option>אור עקיבא</option>
+<option>טבריה</option>
+</select><br><br>
+
+<select id="packageType" required>
+<option value="">בחר סוג חבילה</option>
+<option>חבילת מזון</option>
+<option>תלוש/שובר</option>
+<option>חבילה + שובר</option>
+</select><br><br>
+
+<button type="submit" class="submit-btn" id="submitBtn">
+שלח רישום
+</button>
+
+</form>
+
+<div id="successMessage" class="success-message">
+<h3>✅ נרשמת בהצלחה!</h3>
+<p>מספר ההזמנה שלך:</p>
+<h2 id="registrationNumber"></h2>
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* 🔥 Firebase */
+const firebaseConfig = {
+  apiKey: "AIzaSyAmnAzUatfV97LwL4VoVEUrJoVnnF6I2J4",
+  authDomain: "meir-panim-f27c4.firebaseapp.com",
+  projectId: "meir-panim-f27c4",
+  storageBucket: "meir-panim-f27c4.appspot.com",
+  messagingSenderId: "252083260218",
+  appId: "1:252083260218:web:ea5e1ef072ae048191dd1e03"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const form = document.getElementById("registrationForm");
+const successBox = document.getElementById("successMessage");
+const regNumEl = document.getElementById("registrationNumber");
+const submitBtn = document.getElementById("submitBtn");
+
+/* ========================= */
+/* 🚀 SUBMIT */
+/* ========================= */
+
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "שומר...";
+
+    const registrationNumber =
+        "MP" + Date.now().toString().slice(-8);
+
+    const formData = {
+        fullName: fullName.value,
+        idNumber: idNumber.value,
+        phone: phone.value,
+        city: city.value,
+        packageType: packageType.value,
+        registrationNumber,
+        registrationDate: serverTimestamp()
+    };
+
+    try {
+        /* 💾 שמירה */
+        await addDoc(collection(db, "registrations"), formData);
+
+        /* 📱 פורמט טלפון */
+        let formattedPhone = formData.phone.replace(/\D/g, "");
+
+        if (formattedPhone.startsWith("0")) {
+            formattedPhone = "+972" + formattedPhone.substring(1);
+        } else if (!formattedPhone.startsWith("+")) {
+            formattedPhone = "+972" + formattedPhone;
+        }
+
+        /* 🔥 QR LINK */
+        const qrLink =
+            "https://sssnoy81-alt.github.io/Meir_panim/qr.html?code=" +
+            registrationNumber;
+
+        /* 📩 הודעת SMS */
+        const smsBody =
+`מאיר פנים
+
+מספר ההזמנה שלך:
+${registrationNumber}
+
+לסריקת QR:
+${qrLink}
+
+שמור הודעה זו.`;
+
+
+        /* 🚀 שליחה לטוויליו דרך ה-Worker שלך */
+        await fetch(
+            "https://meir-panim-sms.sssnoy81.workers.dev/",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    to: formattedPhone,
+                    body: smsBody
+                })
+            }
+        );
+
+        /* ✅ הצלחה */
+        regNumEl.textContent = registrationNumber;
+        form.style.display = "none";
+        successBox.classList.add("show");
+
+    } catch (err) {
+        console.error(err);
+        alert("שגיאה בשליחה");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "שלח רישום";
+    }
+});
+</script>
+</body>
+</html>
