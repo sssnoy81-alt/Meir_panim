@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>בדיקת הזמנה - מאיר פנים</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#f6f6f6;margin:0;padding:24px}
+    .card{max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+    h1{margin:0 0 10px;font-size:22px}
+    .code{font-weight:700}
+    .status{margin-top:14px;padding:14px;border-radius:14px;font-size:18px;line-height:1.4}
+    .ok{background:#eaffea;border:1px solid #9fe39f}
+    .bad{background:#ffecec;border:1px solid #f3a3a3}
+    .info{background:#eef4ff;border:1px solid #a8c3ff}
+    .small{color:#666;font-size:13px;margin-top:10px;word-break:break-word}
+    button{margin-top:14px;width:100%;padding:12px;border:0;border-radius:12px;font-size:16px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>בדיקת הזמנה – מאיר פנים</h1>
+    <div>קוד: <span class="code" id="codeText">...</span></div>
+
+    <div id="box" class="status info">בודק…</div>
+
+    <button onclick="location.reload()">בדיקה מחדש</button>
+    <div class="small" id="raw"></div>
+  </div>
+
+<script>
+  const WORKER_URL = "https://meir-panim-sms.sssnoy81.workers.dev";
+
+  const params = new URLSearchParams(location.search);
+  const code = (params.get("code") || "").trim();
+
+  document.getElementById("codeText").textContent = code || "לא נמצא";
+
+  async function run() {
+    const box = document.getElementById("box");
+    const raw = document.getElementById("raw");
+
+    if (!code) {
+      box.className = "status bad";
+      box.textContent = "חסר פרמטר code בקישור.";
+      return;
+    }
+
+    try {
+      const url = `${WORKER_URL}/verify?code=${encodeURIComponent(code)}`;
+      const res = await fetch(url, { method: "GET" });
+      const data = await res.json();
+
+      raw.textContent = "תשובת מערכת: " + JSON.stringify(data);
+
+      if (data.ok === true) {
+        box.className = "status ok";
+        box.textContent = "✅ אושר – ניתן לחלק.";
+      } else {
+        box.className = "status bad";
+        box.textContent = "❌ לא תקין / נוצל – לא לחלק.";
+      }
+    } catch (e) {
+      box.className = "status bad";
+      box.textContent = "שגיאה בבדיקה. נסה שוב / בדוק אינטרנט.";
+      raw.textContent = String(e);
+    }
+  }
+
+  run();
+</script>
+</body>
+</html>
