@@ -1,53 +1,92 @@
-const CACHE_NAME = 'meir-panim-v1';
-const urlsToCache = [
-  '/Meir_panim/',
-  '/Meir_panim/index.html',
-  '/Meir_panim/home.html',
-  '/Meir_panim/registration-firebase.html',
-  '/Meir_panim/volunteer-firebase.html',
-  '/Meir_panim/admin-firebase.html',
-  '/Meir_panim/login.html',
-  '/Meir_panim/intro-video.mp4'
+// ===== MEIR PANIM SERVICE WORKER =====
+// גרסה - שנה את המספר הזה בכל עדכון!
+const VERSION = '2.0.2';
+const CACHE_NAME = `meir-panim-v${VERSION}`;
+
+// קבצים לשמירה במטמון
+const STATIC_FILES = [
+  '/',
+  '/home.html',
+  '/login.html',
+  '/registration-firebase.html',
+  '/volunteer-firebase.html',
+  '/admin-firebase.html',
+  '/users-config.js',
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
-// Install Service Worker
+// ===== התקנה - מחק Cache ישן וטען חדש =====
 self.addEventListener('install', event => {
+  console.log(`[SW] Installing version ${VERSION}`);
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(STATIC_FILES);
+    }).then(() => {
+      // כפה החלפה מיידית - לא מחכה לסגירת טאבים
+      return self.skipWaiting();
+    })
+  );
+});
+
+// ===== הפעלה - מחק כל ה-Cache הישן =====
+self.addEventListener('activate', event => {
+  console.log(`[SW] Activating version ${VERSION}`);
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames
+          .filter(name => name !== CACHE_NAME)
+          .map(name => {
+            console.log(`[SW] Deleting old cache: ${name}`);
+            return caches.delete(name);
+          })
+      );
+    }).then(() => {
+      // קח שליטה על כל הלקוחות מיד
+      return self.clients.claim();
+    })
+  );
+});
+
+// ===== בקשות - Network First (תמיד מהרשת תחילה!) =====
+self.addEventListener('fetch', event => {
+  // דלג על בקשות שאינן GET
+  if (event.request.method !== 'GET') return;
+
+  // דלג על בקשות חיצוניות (Firebase, Twilio וכו')
+  const url = new URL(event.request.url);
+  if (!url.origin.includes('github.io') && !url.origin.includes('localhost')) {
+    return;
+  }
+
+  event.respondWith(
+    // נסה רשת תחילה
+    fetch(event.request)
+      .then(response => {
+        // אם הצליח - שמור במטמון ותחזיר
+        if (response && response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // אם אין רשת - חזור למטמון
+        return caches.match(event.request);
       })
   );
 });
 
-// Fetch from cache
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
-  );
-});
-
-// Update Service Worker
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+// ===== הודעה לעדכון =====
+self.addEventListener('message', event => {
+  if (event.data === 'skipWaiting') {
+    self.skipWaiting();
+  }
+  if (event.data === 'getVersion') {
+    event.ports[0].postMessage(VERSION);
+  }
 });
