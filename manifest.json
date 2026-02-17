@@ -2,7 +2,9 @@
   "name": "מאיר פנים - בית תמחוי",
   "short_name": "מאיר פנים",
   "description": "מערכת ניהול חלוקת חבילות מזון - בית תמחוי מאיר פנים",
-  "start_url": "/Meir_panim/",
+  "version": "2.0.2",
+  "start_url": "/Meir_panim/home.html",
+  "scope": "/Meir_panim/",
   "display": "standalone",
   "background_color": "#8B1538",
   "theme_color": "#8B1538",
@@ -23,6 +25,6 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "utilities"],
-  "screenshots": []
+  "screenshots": [],
+  "categories": ["utilities", "productivity"]
 }
