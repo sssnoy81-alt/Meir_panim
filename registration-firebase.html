@@ -1,633 +1,341 @@
-<!-- registration-firebase.html
-     Meir Panim - Registration (Production-ready)
-     Replace your GitHub file with this one AS-IS.
-
-     ✅ One-way flow (no reply needed)
-     ✅ Sends registration to Cloudflare Worker
-     ✅ Worker sends SMS with order number + QR link
-     ✅ Hardened: auto-tries multiple endpoints to avoid "Not found"
-     ✅ Hebrew UI + clean mobile layout
--->
-<!doctype html>
-<html lang="he" dir="rtl">
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>רישום משפחה חדשה</title>
-
-  <meta name="theme-color" content="#7b1230" />
-  <style>
-    :root{
-      --bg:#7b1230;
-      --card:#ffffff;
-      --muted:#6b7280;
-      --ok:#16a34a;
-      --bad:#dc2626;
-      --line:#e5e7eb;
-      --btn:#7b1230;
-      --btn2:#111827;
-      --soft:#f8fafc;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans Hebrew", sans-serif;
-      background: var(--bg);
-      color:#111;
-      min-height:100vh;
-      display:flex;
-      align-items:flex-start;
-      justify-content:center;
-      padding:24px 12px;
-    }
-    .wrap{width:min(720px, 100%)}
-    .card{
-      background:var(--card);
-      border-radius:18px;
-      padding:18px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.22);
-    }
-    h1{
-      margin:6px 0 14px;
-      font-size:26px;
-      text-align:center;
-      color:#111;
-    }
-    .sub{
-      margin:0 0 14px;
-      text-align:center;
-      color:var(--muted);
-      font-size:14px;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    @media (max-width:640px){
-      .grid{grid-template-columns:1fr}
-    }
-    label{
-      display:block;
-      font-size:13px;
-      color:#111827;
-      margin:2px 0 6px;
-      font-weight:600;
-    }
-    input, select, textarea{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px 12px;
-      font-size:16px;
-      background:#fff;
-      outline:none;
-    }
-    input:focus, select:focus, textarea:focus{
-      border-color:#c084fc;
-      box-shadow: 0 0 0 4px rgba(192,132,252,.18);
-    }
-    textarea{min-height:86px; resize:vertical}
-    .row{margin-top:10px}
-    .actions{
-      display:flex;
-      gap:10px;
-      margin-top:14px;
-      flex-wrap:wrap;
-    }
-    button{
-      border:none;
-      border-radius:12px;
-      padding:12px 14px;
-      font-size:16px;
-      cursor:pointer;
-      font-weight:700;
-    }
-    .btn{
-      background:var(--btn);
-      color:#fff;
-      flex:1;
-      min-width:180px;
-    }
-    .btn:disabled{opacity:.55; cursor:not-allowed}
-    .btn2{
-      background:var(--btn2);
-      color:#fff;
-    }
-    .note{
-      margin-top:10px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.4;
-    }
-
-    .banner{
-      border-radius:14px;
-      padding:12px 12px;
-      margin:10px 0 14px;
-      display:none;
-      align-items:center;
-      gap:10px;
-      border:1px solid var(--line);
-      background:var(--soft);
-    }
-    .banner.show{display:flex}
-    .banner.ok{
-      border-color: rgba(22,163,74,.35);
-      background: rgba(22,163,74,.10);
-    }
-    .banner.bad{
-      border-color: rgba(220,38,38,.35);
-      background: rgba(220,38,38,.10);
-    }
-    .badge{
-      min-width:30px;
-      height:30px;
-      border-radius:999px;
-      display:grid;
-      place-items:center;
-      font-weight:900;
-      color:#fff;
-      flex:0 0 auto;
-    }
-    .badge.ok{background:var(--ok)}
-    .badge.bad{background:var(--bad)}
-    .banner .txt{
-      flex:1;
-      font-size:14px;
-      line-height:1.35;
-      color:#111827;
-      white-space:pre-wrap;
-    }
-
-    .result{
-      display:none;
-      margin-top:12px;
-      border:1px dashed #cbd5e1;
-      background:#f8fafc;
-      border-radius:14px;
-      padding:12px;
-    }
-    .result.show{display:block}
-    .result h2{
-      margin:0 0 8px;
-      font-size:18px;
-    }
-    .kv{
-      display:grid;
-      grid-template-columns: 140px 1fr;
-      gap:8px 10px;
-      align-items:center;
-      font-size:14px;
-    }
-    @media (max-width:640px){
-      .kv{grid-template-columns: 110px 1fr}
-    }
-    .k{color:#374151; font-weight:700}
-    .v{
-      color:#111827;
-      word-break:break-word;
-      background:#fff;
-      border:1px solid #e5e7eb;
-      padding:8px 10px;
-      border-radius:10px;
-    }
-    .mini-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
-    .link{
-      display:inline-block;
-      text-decoration:none;
-      color:#111827;
-      background:#fff;
-      border:1px solid #e5e7eb;
-      padding:10px 12px;
-      border-radius:12px;
-      font-weight:700;
-    }
-    .qrBox{
-      margin-top:10px;
-      display:flex;
-      justify-content:center;
-    }
-    #qrCanvas{
-      width:220px;
-      height:220px;
-      border-radius:14px;
-      background:#fff;
-      border:1px solid #e5e7eb;
-      padding:10px;
-      display:none;
-    }
-  </style>
-
-  <!-- QR code generator (reliable CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>רישום למשפחות - בית תמחוי מאיר פנים</title>
+    <meta name="description" content="מערכת ניהול חלוקת חבילות מזון - בית תמחוי מאיר פנים">
+    <meta name="theme-color" content="#8B1538">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="מאיר פנים">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { font-size: 16px; opacity: 0.9; }
+        .form-section { padding: 30px; }
+        .form-group { margin-bottom: 25px; }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+        input[type="text"], input[type="tel"], input[type="number"], select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #8B1538;
+        }
+        .required { color: #e74c3c; }
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 21, 56, 0.4);
+        }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .info-box {
+            background: #fff5f7;
+            border-right: 4px solid #8B1538;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .info-box p { color: #555; line-height: 1.6; }
+        .success-message {
+            display: none;
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .success-message.show { display: block; }
+        .barcode-container {
+            margin-top: 20px;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+        #qrcode { margin: 20px auto; display: flex; justify-content: center; }
+        .print-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .sms-status {
+            margin-top: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+        .sms-status.sending { background: #fff3cd; color: #856404; }
+        .sms-status.success { background: #d4edda; color: #155724; }
+        .sms-status.error { background: #f8d7da; color: #721c24; }
+    </style>
 </head>
-
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>רישום משפחה חדשה</h1>
-      <p class="sub">מילוי פרטים ושליחת אישור SMS עם מספר הזמנה וקישור QR למסירה</p>
-
-      <div id="banner" class="banner">
-        <div id="badge" class="badge">!</div>
-        <div id="bannerText" class="txt"></div>
-      </div>
-
-      <form id="regForm" autocomplete="off" novalidate>
-        <div class="grid">
-          <div>
-            <label for="fullName">שם מלא *</label>
-            <input id="fullName" name="fullName" type="text" placeholder="לדוגמה: יפה נוימן" required />
-          </div>
-
-          <div>
-            <label for="idNumber">מספר תעודת זהות *</label>
-            <input id="idNumber" name="idNumber" type="text" inputmode="numeric" placeholder="לדוגמה: 012345678" required />
-          </div>
-
-          <div>
-            <label for="phone">טלפון נייד *</label>
-            <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="05XXXXXXXX או +9725XXXXXXXX" required />
-          </div>
-
-          <div>
-            <label for="branch">סניף *</label>
-            <select id="branch" name="branch" required>
-              <option value="">בחר סניף</option>
-              <option value="Jerusalem">ירושלים</option>
-              <option value="Or_Akiva">אור עקיבא</option>
-              <option value="Hadera">חדרה</option>
-              <option value="Tiberias">טבריה</option>
-              <option value="Tzfat">צפת</option>
-            </select>
-          </div>
-
-          <div>
-            <label for="familySize">גודל משפחה</label>
-            <input id="familySize" name="familySize" type="number" min="1" max="30" placeholder="לדוגמה: 6" />
-          </div>
-
-          <div>
-            <label for="packageType">סוג חבילה</label>
-            <select id="packageType" name="packageType">
-              <option value="Standard">חבילה רגילה</option>
-              <option value="Standard_Plus">חבילה + שוברים</option>
-              <option value="Passover">פסח</option>
-              <option value="Holiday">חג</option>
-            </select>
-          </div>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <a href="home.html" style="display: block; cursor: pointer; text-decoration: none;">
+                    <div style="width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                        <svg width="72" height="72" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="47" fill="#C1272D"/>
+                            <path d="M 28 46 L 50 26 L 72 46 L 72 41 L 50 21 L 28 41 Z" fill="white"/>
+                            <g transform="translate(35, 41)">
+                                <circle cx="5" cy="5" r="3.5" fill="white"/>
+                                <circle cx="15" cy="5" r="3.5" fill="white"/>
+                                <circle cx="25" cy="5" r="3.5" fill="white"/>
+                                <rect x="2" y="10" width="26" height="18" fill="white" rx="2"/>
+                                <line x1="8" y1="14" x2="22" y2="14" stroke="#C1272D" stroke-width="1.5"/>
+                                <line x1="8" y1="18" x2="22" y2="18" stroke="#C1272D" stroke-width="1.5"/>
+                                <line x1="8" y1="22" x2="18" y2="22" stroke="#C1272D" stroke-width="1.5"/>
+                            </g>
+                        </svg>
+                    </div>
+                </a>
+                <div style="flex: 1; min-width: 200px;">
+                    <h1>רישום משפחות</h1>
+                    <p>בית תמחוי מאיר פנים</p>
+                </div>
+            </div>
         </div>
 
-        <div class="row">
-          <label for="notes">הערות</label>
-          <textarea id="notes" name="notes" placeholder="צרכים מיוחדים, אלרגיות, הערות למנהל הסניף וכו'"></textarea>
-        </div>
+        <div class="form-section">
+            <div class="info-box">
+                <p>💡 אנא מלא את הטופס כדי להירשם למערכת החלוקה. לאחר הרישום תקבל SMS עם מספר הזמנה אישי.</p>
+            </div>
 
-        <div class="actions">
-          <button id="submitBtn" class="btn" type="submit">שלח רישום</button>
-          <button id="resetBtn" class="btn2" type="button">נקה טופס</button>
-        </div>
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label>שם מלא <span class="required">*</span></label>
+                    <input type="text" id="fullName" required placeholder="הכנס שם מלא">
+                </div>
+                <div class="form-group">
+                    <label>מספר תעודת זהות <span class="required">*</span></label>
+                    <input type="text" id="idNumber" required placeholder="9 ספרות" maxlength="9">
+                </div>
+                <div class="form-group">
+                    <label>מספר טלפון <span class="required">*</span></label>
+                    <input type="tel" id="phone" required placeholder="050-1234567">
+                </div>
+                <div class="form-group">
+                    <label>עיר <span class="required">*</span></label>
+                    <select id="city" required>
+                        <option value="">בחר עיר</option>
+                        <option value="ירושלים">ירושלים</option>
+                        <option value="צפת">צפת</option>
+                        <option value="דימונה">דימונה</option>
+                        <option value="אור עקיבא">אור עקיבא</option>
+                        <option value="טבריה">טבריה</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>סוג חבילה <span class="required">*</span></label>
+                    <select id="packageType" required>
+                        <option value="">בחר סוג חבילה</option>
+                        <option value="חבילת מזון">חבילת מזון</option>
+                        <option value="תלוש/שובר">תלוש/שובר</option>
+                        <option value="חבילה + שובר">חבילה + שובר</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>הערות (אופציונלי)</label>
+                    <input type="text" id="notes" placeholder="למשל: צרכים מיוחדים, אלרגיות">
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn">שלח רישום</button>
+            </form>
 
-        <div class="note">
-          • שליחה חד-כיוונית: אין צורך שהלקוח ישיב. <br/>
-          • אם יש בעיית “Not found” או שינוי בנתיב Worker — הקובץ הזה מנסה כמה נתיבים אוטומטית.
+            <div id="successMessage" class="success-message">
+                <h2>✅ נרשמת בהצלחה למאיר פנים!</h2>
+                <p style="font-size: 16px; margin: 10px 0;">ברוכים הבאים למשפחת מאיר פנים</p>
+                <p>מספר הרישום שלך: <strong id="registrationNumber"></strong></p>
+                <div class="barcode-container">
+                    <p><strong>מספר ההזמנה האישי שלך:</strong></p>
+                    <div id="qrcode"></div>
+                    <div id="smsStatus" class="sms-status sending">📱 שולח SMS...</div>
+                    <button class="print-btn" onclick="window.print()">🖨️ הדפס תלוש</button>
+                </div>
+                <p style="margin-top: 20px; font-size: 14px; color: #666;">
+                    נתראה בקרוב! צוות מאיר פנים ❤️
+                </p>
+            </div>
         </div>
-      </form>
-
-      <div id="result" class="result">
-        <h2>✅ נרשם בהצלחה</h2>
-        <div class="kv">
-          <div class="k">מספר הזמנה</div><div class="v" id="orderId">-</div>
-          <div class="k">טלפון</div><div class="v" id="phoneOut">-</div>
-          <div class="k">סניף</div><div class="v" id="branchOut">-</div>
-          <div class="k">קישור QR</div><div class="v" id="qrLinkOut">-</div>
-        </div>
-
-        <div class="mini-actions">
-          <a id="openQr" class="link" href="#" target="_blank" rel="noopener">פתח QR</a>
-          <button id="copyOrder" class="link" type="button">העתק מספר הזמנה</button>
-          <button id="copyQr" class="link" type="button">העתק קישור QR</button>
-        </div>
-
-        <div class="qrBox">
-          <div id="qrCanvas"></div>
-        </div>
-      </div>
-
     </div>
-  </div>
 
-<script>
-/* ===========================
-   CONFIG (update only if needed)
-   =========================== */
-const WORKER_BASE = "https://meir-panim-sms.sssnoy81.workers.dev";
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-/**
- * We will try these endpoints in order until one works.
- * This prevents "Not found" when the Worker path changed.
- */
-const ENDPOINTS = [
-  "/register",   // recommended
-  "/send",       // legacy
-  "/issue",      // legacy
-  "/api/register",
-  "/api/send",
-  "/v1/register",
-];
+        // ===== הגדרות =====
+        const WORKER_URL = 'https://meir-panim-sms.sssnoy81.workers.dev/send';
 
-/* ===========================
-   Helpers
-   =========================== */
-const $ = (id) => document.getElementById(id);
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmaAzUatTV97LwL4VoVEUrJoVpnF612ig",
+            authDomain: "meir-panim-f27c4.firebaseapp.com",
+            projectId: "meir-panim-f27c4",
+            storageBucket: "meir-panim-f27c4.firebasestorage.app",
+            messagingSenderId: "252083260218",
+            appId: "1:252083260218:web:ea5e1e072aed819b8d1e03",
+            measurementId: "G-VXGZ0RHHD5"
+        };
 
-function showBanner(type, text){
-  const banner = $("banner");
-  const badge = $("badge");
-  const bannerText = $("bannerText");
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-  banner.classList.remove("ok","bad","show");
-  badge.classList.remove("ok","bad");
+        const registrationForm = document.getElementById('registrationForm');
+        const successMessage = document.getElementById('successMessage');
+        const registrationNumberEl = document.getElementById('registrationNumber');
+        const submitBtn = document.getElementById('submitBtn');
 
-  if(type === "ok"){
-    banner.classList.add("ok","show");
-    badge.classList.add("ok");
-    badge.textContent = "✓";
-  } else {
-    banner.classList.add("bad","show");
-    badge.classList.add("bad");
-    badge.textContent = "!";
-  }
-  bannerText.textContent = text;
-}
+        registrationForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-function hideBanner(){
-  $("banner").classList.remove("show","ok","bad");
-}
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'שומר...';
 
-function normalizeIsraeliPhone(input){
-  // Accept: 05XXXXXXXX, 5XXXXXXXX, +9725XXXXXXXX, 9725XXXXXXXX
-  let p = (input || "").trim();
-  p = p.replace(/[^\d+]/g, ""); // keep digits and +
-  if(!p) return "";
+            const registrationNumber = 'MP' + Date.now().toString().slice(-8);
 
-  if(p.startsWith("+")) {
-    // already E.164
-    return p;
-  }
-  if(p.startsWith("972")) {
-    return "+" + p;
-  }
-  // local formats:
-  if(p.startsWith("0")) {
-    // 05xxxxxxx -> +9725xxxxxxx
-    p = p.slice(1);
-    return "+972" + p;
-  }
-  // if they typed 5xxxxxxxx
-  if(p.startsWith("5")) {
-    return "+972" + p;
-  }
-  // fallback: if they typed something else, return as-is (will fail validation later)
-  return p.startsWith("+") ? p : ("+" + p);
-}
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                idNumber: document.getElementById('idNumber').value,
+                phone: document.getElementById('phone').value || '',
+                city: document.getElementById('city').value,
+                packageType: document.getElementById('packageType').value,
+                notes: document.getElementById('notes').value || '',
+                registrationDate: serverTimestamp(),
+                registrationNumber: registrationNumber,
+                packageReceived: false,
+                receivedDate: null
+            };
 
-function cleanIdNumber(id){
-  return (id || "").replace(/[^\d]/g, "").trim();
-}
+            try {
+                // 1. שמור ב-Firebase
+                await addDoc(collection(db, 'registrations'), formData);
 
-function safeStr(v){
-  return String(v ?? "").trim();
-}
+                // 2. הצג הצלחה
+                registrationNumberEl.textContent = registrationNumber;
+                registrationForm.style.display = 'none';
+                successMessage.classList.add('show');
 
-async function postJSON(url, body, timeoutMs = 15000){
-  const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), timeoutMs);
+                // 3. הצג מספר הזמנה
+                const qrcodeDiv = document.getElementById('qrcode');
+                qrcodeDiv.innerHTML = `
+                    <div style="width: 280px; margin: 0 auto; border: 4px solid #8B1538; border-radius: 15px; padding: 30px 20px; background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%); box-shadow: 0 8px 20px rgba(0,0,0,0.15); text-align: center;">
+                        <div style="font-size: 16px; color: #666; margin-bottom: 15px; font-weight: 600;">📋 מספר ההזמנה שלך</div>
+                        <div style="font-size: 36px; font-weight: bold; color: #8B1538; letter-spacing: 2px; margin: 10px 0; word-break: break-all; line-height: 1.3;">${registrationNumber}</div>
+                        <div style="font-size: 14px; color: #999; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #ddd;">💡 הצג מספר זה בעמדת החלוקה</div>
+                    </div>
+                `;
 
-  try{
-    const res = await fetch(url, {
-      method:"POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-      // credentials not needed
-    });
+                // 4. שלח SMS דרך Cloudflare Worker
+                const smsStatus = document.getElementById('smsStatus');
+                if (formData.phone) {
+                    try {
+                        smsStatus.className = 'sms-status sending';
+                        smsStatus.textContent = '📱 שולח SMS...';
 
-    let data = null;
-    const ct = res.headers.get("content-type") || "";
-    if(ct.includes("application/json")){
-      data = await res.json().catch(() => null);
-    } else {
-      const text = await res.text().catch(() => "");
-      data = { ok:false, error: text || "Non-JSON response" };
-    }
+                        const response = await fetch(WORKER_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                phone: formData.phone,
+                                name: formData.fullName,
+                                orderId: registrationNumber
+                            })
+                        });
 
-    return { res, data };
-  } finally {
-    clearTimeout(t);
-  }
-}
+                        const result = await response.json();
 
-function mapBranchLabel(branchValue){
-  const map = {
-    "Jerusalem":"ירושלים",
-    "Or_Akiva":"אור עקיבא",
-    "Hadera":"חדרה",
-    "Tiberias":"טבריה",
-    "Tzfat":"צפת"
-  };
-  return map[branchValue] || branchValue || "-";
-}
+                        if (result.ok) {
+                            smsStatus.className = 'sms-status success';
+                            smsStatus.textContent = '✅ SMS נשלח לטלפון שלך!';
+                            console.log('✅ SMS נשלח בהצלחה:', result);
+                        } else {
+                            throw new Error(result.error || 'שגיאה בשליחת SMS');
+                        }
+                    } catch (smsError) {
+                        console.error('❌ שגיאה בשליחת SMS:', smsError);
+                        smsStatus.className = 'sms-status error';
+                        smsStatus.textContent = '⚠️ לא הצלחנו לשלוח SMS - שמור את מספר ההזמנה!';
+                    }
+                } else {
+                    smsStatus.className = 'sms-status error';
+                    smsStatus.textContent = '⚠️ לא הוזן מספר טלפון - שמור את מספר ההזמנה!';
+                }
 
-async function tryWorker(payload){
-  // Try endpoints until one returns ok:true OR returns a meaningful JSON (even if ok:false but not 404).
-  const errors = [];
+            } catch (error) {
+                console.error('Error:', error);
+                alert('שגיאה בשמירת הרישום. אנא נסה שוב.\n\n' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'שלח רישום';
+            }
+        });
 
-  for(const path of ENDPOINTS){
-    const url = WORKER_BASE.replace(/\/+$/,"") + path;
-
-    try{
-      const {res, data} = await postJSON(url, payload);
-
-      // If endpoint doesn't exist, Worker usually returns 404 with text/JSON.
-      // We'll treat 404 as "try next".
-      if(res.status === 404 || (data && typeof data.error === "string" && /not\s*found/i.test(data.error))){
-        errors.push(`404 on ${path}`);
-        continue;
-      }
-
-      // Any non-404 response: return it (either ok or meaningful error)
-      return { url, status: res.status, data };
-    } catch (e){
-      errors.push(`${path}: ${e?.name === "AbortError" ? "timeout" : (e?.message || "network error")}`);
-      continue;
-    }
-  }
-
-  return { url: null, status: 0, data: { ok:false, error: "No valid endpoint found", details: errors } };
-}
-
-/* ===========================
-   UI handlers
-   =========================== */
-function setLoading(isLoading){
-  const btn = $("submitBtn");
-  btn.disabled = isLoading;
-  btn.textContent = isLoading ? "שולח..." : "שלח רישום";
-}
-
-function showResult({orderId, phone, branchLabel, qrLink}){
-  $("orderId").textContent = orderId || "-";
-  $("phoneOut").textContent = phone || "-";
-  $("branchOut").textContent = branchLabel || "-";
-  $("qrLinkOut").textContent = qrLink || "-";
-
-  const openQr = $("openQr");
-  if(qrLink){
-    openQr.href = qrLink;
-    openQr.style.pointerEvents = "auto";
-    openQr.style.opacity = "1";
-  } else {
-    openQr.href = "#";
-    openQr.style.pointerEvents = "none";
-    openQr.style.opacity = "0.6";
-  }
-
-  $("result").classList.add("show");
-
-  // Render QR
-  const box = $("qrCanvas");
-  box.style.display = "none";
-  box.innerHTML = "";
-
-  if(qrLink && window.QRCode){
-    window.QRCode.toCanvas(document.createElement("canvas"), qrLink, { width: 200, margin: 1 }, (err, canvas) => {
-      if(!err && canvas){
-        box.appendChild(canvas);
-        box.style.display = "block";
-      }
-    });
-  }
-}
-
-function hideResult(){
-  $("result").classList.remove("show");
-}
-
-/* ===========================
-   Main submit
-   =========================== */
-$("regForm").addEventListener("submit", async (ev) => {
-  ev.preventDefault();
-  hideBanner();
-  hideResult();
-
-  // Collect
-  const fullName = safeStr($("fullName").value);
-  const idNumber = cleanIdNumber($("idNumber").value);
-  const phoneRaw = safeStr($("phone").value);
-  const phone = normalizeIsraeliPhone(phoneRaw);
-  const branch = safeStr($("branch").value);
-  const familySize = safeStr($("familySize").value);
-  const packageType = safeStr($("packageType").value);
-  const notes = safeStr($("notes").value);
-
-  // Validate (client-side)
-  if(!fullName || fullName.length < 2){
-    showBanner("bad", "נא למלא שם מלא תקין.");
-    return;
-  }
-  if(!idNumber || idNumber.length < 7){
-    showBanner("bad", "נא למלא מספר תעודת זהות תקין.");
-    return;
-  }
-  if(!phone || !phone.startsWith("+") || phone.length < 10){
-    showBanner("bad", "נא למלא מספר טלפון תקין (05XXXXXXXX או +9725XXXXXXXX).");
-    return;
-  }
-  if(!branch){
-    showBanner("bad", "נא לבחור סניף.");
-    return;
-  }
-
-  // Payload for Worker (worker should accept these fields; extra fields won't hurt)
-  const payload = {
-    type: "registration",
-    fullName,
-    idNumber,
-    phone,
-    branch,
-    familySize: familySize ? Number(familySize) : null,
-    packageType,
-    notes,
-    channel: "web",
-    // Helps debug routing on Worker
-    clientTs: new Date().toISOString(),
-    userAgent: navigator.userAgent
-  };
-
-  setLoading(true);
-
-  try{
-    const resp = await tryWorker(payload);
-    const data = resp.data || {};
-
-    if(!data.ok){
-      // Show the most useful error message
-      const err = data.error || data.message || "שגיאה בשליחה. נסה שוב.";
-      const details = Array.isArray(data.details) ? ("\n" + data.details.join("\n")) : "";
-      showBanner("bad", `${err}${details}`);
-      return;
-    }
-
-    // Normalize response fields (support different worker versions)
-    const orderId = data.orderId || data.order || data.code || data.confirmation || data.registrationId || "";
-    const qrLink = data.qrLink || data.link || data.qr || data.verifyUrl || "";
-    const branchLabel = mapBranchLabel(branch);
-
-    showBanner("ok", `נרשמת בהצלחה! ✅\nמספר הזמנה: ${orderId || "נוצר"}\nSMS נשלח ללקוח.`);
-    showResult({ orderId, phone, branchLabel, qrLink });
-
-  } catch (e){
-    showBanner("bad", `שגיאה בלתי צפויה: ${e?.message || e}`);
-  } finally {
-    setLoading(false);
-  }
-});
-
-$("resetBtn").addEventListener("click", () => {
-  $("regForm").reset();
-  hideBanner();
-  hideResult();
-});
-
-$("copyOrder").addEventListener("click", async () => {
-  const v = $("orderId").textContent.trim();
-  if(!v || v === "-") return;
-  try{
-    await navigator.clipboard.writeText(v);
-    showBanner("ok", "הועתק מספר ההזמנה ללוח.");
-  } catch {
-    showBanner("bad", "לא הצלחתי להעתיק. העתק ידנית.");
-  }
-});
-
-$("copyQr").addEventListener("click", async () => {
-  const v = $("qrLinkOut").textContent.trim();
-  if(!v || v === "-") return;
-  try{
-    await navigator.clipboard.writeText(v);
-    showBanner("ok", "הועתק קישור ה-QR ללוח.");
-  } catch {
-    showBanner("bad", "לא הצלחתי להעתיק. העתק ידנית.");
-  }
-});
-</script>
+        // Print styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @media print {
+                body * { visibility: hidden; }
+                .success-message, .success-message * { visibility: visible; }
+                .success-message { position: absolute; left: 0; top: 0; width: 100%; }
+                .print-btn { display: none; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
-</html>
+                         </html>
