@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#8B1538">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -70,15 +71,16 @@
         .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .success-message {
             display: none;
-            background: #d4edda;
-            border: 2px solid #28a745;
-            color: #155724;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
+            background: white;
+            padding: 30px;
             text-align: center;
         }
         .success-message.show { display: block; }
+        .success-message h2 {
+            color: #28a745;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
         .order-display {
             margin: 20px auto;
             padding: 30px 20px;
@@ -88,13 +90,44 @@
             text-align: center;
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
-        .order-label { font-size: 16px; color: #666; margin-bottom: 15px; font-weight: 600; }
-        .order-number { font-size: 36px; font-weight: bold; color: #8B1538; letter-spacing: 2px; }
+        .order-label { 
+            font-size: 18px; 
+            color: #666; 
+            margin-bottom: 15px; 
+            font-weight: 600; 
+        }
+        .order-number { 
+            font-size: 42px; 
+            font-weight: bold; 
+            color: #8B1538; 
+            letter-spacing: 3px;
+            margin: 15px 0;
+        }
+        .qr-container {
+            margin: 30px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        #qrcode {
+            margin: 0 auto;
+        }
+        .qr-instructions {
+            font-size: 16px;
+            color: #666;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed #ddd;
+            line-height: 1.6;
+        }
         .sms-status {
-            margin-top: 15px;
-            padding: 10px 15px;
+            margin-top: 20px;
+            padding: 15px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 15px;
+            font-weight: 600;
         }
         .sms-sending { background: #fff3cd; color: #856404; }
         .sms-success { background: #d4edda; color: #155724; }
@@ -150,9 +183,22 @@
             </form>
 
             <div id="successMessage" class="success-message">
-                <h2>✅ נרשמת בהצלחה למאיר פנים!</h2>
-                <p style="margin: 10px 0;">מספר הרישום שלך: <strong id="registrationNumber"></strong></p>
-                <div class="order-display" id="orderDisplay"></div>
+                <h2>✅ נרשמת בהצלחה!</h2>
+                
+                <div class="order-display">
+                    <div class="order-label">📋 מספר ההזמנה שלך</div>
+                    <div class="order-number" id="orderNumber"></div>
+                </div>
+
+                <div class="qr-container">
+                    <canvas id="qrcode"></canvas>
+                </div>
+
+                <div class="qr-instructions">
+                    📱 <strong>הצג קוד QR זה למנהל החלוקה</strong><br>
+                    בעת קבלת החבילה
+                </div>
+
                 <div id="smsStatus" class="sms-status sms-sending">📱 שולח SMS...</div>
             </div>
         </div>
@@ -163,12 +209,12 @@
         import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
-            apiKey: "AIzaSyAmaAzUatTV97LwL4VoVEUrJoVpnF612ig",
+            apiKey: "AIzaSyAmnAzUatfV97LwL4VoVEUrJoVnnF6I2J4",
             authDomain: "meir-panim-f27c4.firebaseapp.com",
             projectId: "meir-panim-f27c4",
             storageBucket: "meir-panim-f27c4.firebasestorage.app",
             messagingSenderId: "252083260218",
-            appId: "1:252083260218:web:ea5e1e072aed819b8d1e03",
+            appId: "1:252083260218:web:ea5e1ef072ae048191dd1e03",
             measurementId: "G-VXGZ0RHHD5"
         };
 
@@ -204,24 +250,26 @@
                 await addDoc(collection(db, 'registrations'), formData);
 
                 // הצג הצלחה
-                document.getElementById('registrationNumber').textContent = registrationNumber;
+                document.getElementById('orderNumber').textContent = registrationNumber;
                 registrationForm.style.display = 'none';
                 document.getElementById('successMessage').classList.add('show');
 
-                const orderDisplay = document.getElementById('orderDisplay');
-                orderDisplay.innerHTML = `
-                    <div class="order-label">📋 מספר ההזמנה שלך</div>
-                    <div class="order-number">${registrationNumber}</div>
-                    <div style="font-size: 14px; color: #999; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #ddd;">
-                        💡 הצג מספר זה בעמדת החלוקה
-                    </div>
-                `;
+                // צור QR Code
+                const canvas = document.getElementById('qrcode');
+                QRCode.toCanvas(canvas, registrationNumber, {
+                    width: 250,
+                    margin: 2,
+                    color: {
+                        dark: '#8B1538',
+                        light: '#FFFFFF'
+                    }
+                }, function (error) {
+                    if (error) console.error('QR Error:', error);
+                });
 
-                // שלח SMS דרך Cloudflare Worker
+                // שלח SMS
                 const smsStatus = document.getElementById('smsStatus');
                 try {
-                    console.log('שולח SMS למספר:', formData.phone);
-                    
                     const response = await fetch('https://meir-panim-sms.sssnoy81.workers.dev/send', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -233,16 +281,15 @@
                     });
 
                     const result = await response.json();
-                    console.log('תשובה מ-Worker:', result);
 
                     if (result.ok) {
                         smsStatus.className = 'sms-status sms-success';
                         smsStatus.textContent = '✅ SMS נשלח לטלפון שלך!';
                     } else {
-                        throw new Error(result.error || 'שגיאה לא ידועה');
+                        throw new Error(result.error || 'שגיאה בשליחת SMS');
                     }
                 } catch (smsError) {
-                    console.error('❌ שגיאת SMS:', smsError);
+                    console.error('SMS Error:', smsError);
                     smsStatus.className = 'sms-status sms-error';
                     smsStatus.textContent = '⚠️ לא הצלחנו לשלוח SMS - שמור את מספר ההזמנה!';
                 }
