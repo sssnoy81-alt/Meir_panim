@@ -113,6 +113,10 @@
         #qrcode {
             margin: 0 auto;
         }
+        #qrcode canvas, #qrcode img {
+            display: block;
+            margin: 0 auto;
+        }
         .qr-instructions {
             font-size: 16px;
             color: #666;
@@ -190,7 +194,7 @@
                 </div>
 
                 <div class="qr-container">
-                    <canvas id="qrcode"></canvas>
+                    <div id="qrcode"></div>
                 </div>
 
                 <div class="qr-instructions">
@@ -203,7 +207,9 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- ספריית QR - עובדת ללא API חיצוני -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
@@ -254,25 +260,25 @@
                 registrationForm.style.display = 'none';
                 document.getElementById('successMessage').classList.add('show');
 
-                // צור QR Code
+                // צור QR Code - באמצעות qrcodejs מ-cdnjs (לא chart.googleapis!)
                 setTimeout(() => {
-                    const canvas = document.getElementById('qrcode');
-                    if (typeof QRCode !== 'undefined') {
-                        QRCode.toCanvas(canvas, registrationNumber, {
+                    const qrContainer = document.getElementById('qrcode');
+                    qrContainer.innerHTML = ''; // נקה כל תוכן קודם
+                    
+                    try {
+                        new QRCode(qrContainer, {
+                            text: registrationNumber,
                             width: 250,
-                            margin: 2,
-                            color: {
-                                dark: '#8B1538',
-                                light: '#FFFFFF'
-                            }
-                        }, function (error) {
-                            if (error) console.error('QR Error:', error);
+                            height: 250,
+                            colorDark: '#8B1538',
+                            colorLight: '#FFFFFF',
+                            correctLevel: QRCode.CorrectLevel.H
                         });
-                    } else {
-                        console.error('QRCode library not loaded');
-                        canvas.parentElement.innerHTML = '<p style="color: #721c24;">שגיאה בטעינת QR Code</p>';
+                    } catch (qrErr) {
+                        console.error('QR Error:', qrErr);
+                        qrContainer.innerHTML = '<p style="color:#721c24;padding:10px;">⚠️ שגיאה ביצירת QR - מספר ההזמנה: ' + registrationNumber + '</p>';
                     }
-                }, 100);
+                }, 200);
 
                 // שלח SMS
                 const smsStatus = document.getElementById('smsStatus');
