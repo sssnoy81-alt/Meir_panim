@@ -8,7 +8,6 @@
     <meta name="theme-color" content="#8B1538">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -204,6 +203,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
@@ -255,17 +255,24 @@
                 document.getElementById('successMessage').classList.add('show');
 
                 // צור QR Code
-                const canvas = document.getElementById('qrcode');
-                QRCode.toCanvas(canvas, registrationNumber, {
-                    width: 250,
-                    margin: 2,
-                    color: {
-                        dark: '#8B1538',
-                        light: '#FFFFFF'
+                setTimeout(() => {
+                    const canvas = document.getElementById('qrcode');
+                    if (typeof QRCode !== 'undefined') {
+                        QRCode.toCanvas(canvas, registrationNumber, {
+                            width: 250,
+                            margin: 2,
+                            color: {
+                                dark: '#8B1538',
+                                light: '#FFFFFF'
+                            }
+                        }, function (error) {
+                            if (error) console.error('QR Error:', error);
+                        });
+                    } else {
+                        console.error('QRCode library not loaded');
+                        canvas.parentElement.innerHTML = '<p style="color: #721c24;">שגיאה בטעינת QR Code</p>';
                     }
-                }, function (error) {
-                    if (error) console.error('QR Error:', error);
-                });
+                }, 100);
 
                 // שלח SMS
                 const smsStatus = document.getElementById('smsStatus');
