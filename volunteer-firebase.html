@@ -3,340 +3,1022 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>רישום למשפחות - בית תמחוי מאיר פנים</title>
-    <meta name="description" content="מערכת ניהול חלוקת חבילות מזון - בית תמחוי מאיר פנים">
+    <title>מאיר פנים - אזור מנהל סניף</title>
     <meta name="theme-color" content="#8B1538">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="מאיר פנים">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <style>
+        :root {
+            --red: #8B1538;
+            --red-dark: #6b0f2a;
+            --red-light: #E4032E;
+            --green: #16a34a;
+            --green-bg: #dcfce7;
+            --orange: #ea580c;
+            --orange-bg: #ffedd5;
+            --gray: #6b7280;
+            --gray-light: #f3f4f6;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: #f0f0f0;
             min-height: 100vh;
+        }
+
+        /* ========== LOGIN ========== */
+        #loginScreen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(160deg, var(--red-dark) 0%, var(--red) 50%, var(--red-light) 100%);
             padding: 20px;
         }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
+
+        .login-card {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
-            color: white;
-            padding: 30px;
+            border-radius: 24px;
+            padding: 40px 30px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
             text-align: center;
         }
-        .header h1 { font-size: 28px; margin-bottom: 10px; }
-        .header p { font-size: 16px; opacity: 0.9; }
-        .form-section { padding: 30px; }
-        .form-group { margin-bottom: 25px; }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 15px;
+
+        .login-logo { font-size: 56px; margin-bottom: 6px; animation: beat 1.5s ease infinite; }
+        @keyframes beat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+        .login-title { font-size: 22px; font-weight: 800; color: var(--red); margin-bottom: 2px; }
+        .login-sub { font-size: 13px; color: var(--gray); margin-bottom: 28px; }
+
+        .inp-group { margin-bottom: 14px; text-align: right; }
+        .inp-group label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 5px; }
+        .inp-group input {
+            width: 100%; padding: 12px 14px;
+            border: 2px solid #e5e7eb; border-radius: 10px;
+            font-size: 15px; font-family: inherit; text-align: right;
+            transition: border-color 0.2s;
         }
-        input[type="text"], input[type="tel"], input[type="number"], select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            font-family: inherit;
+        .inp-group input:focus { outline: none; border-color: var(--red); }
+
+        .login-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--red-dark), var(--red-light));
+            color: white; border: none; border-radius: 10px;
+            font-size: 16px; font-weight: 700; font-family: inherit;
+            cursor: pointer; margin-top: 6px; transition: opacity 0.2s;
         }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #8B1538;
+        .login-btn:hover { opacity: 0.9; }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .login-err {
+            margin-top: 12px; padding: 10px;
+            background: #fee2e2; color: #991b1b;
+            border-radius: 8px; font-size: 13px; display: none;
         }
-        .required { color: #e74c3c; }
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #8B1538 0%, #E4032E 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+
+        /* ========== MAIN APP ========== */
+        #mainApp { display: none; }
+
+        /* Topbar */
+        .topbar {
+            background: linear-gradient(135deg, var(--red-dark), var(--red));
+            color: white; padding: 12px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(139, 21, 56, 0.4);
+
+        .topbar-info { line-height: 1.3; }
+        .topbar-name { font-size: 15px; font-weight: 700; }
+        .topbar-branch { font-size: 12px; opacity: 0.85; }
+
+        .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35);
+            color: white; padding: 6px 13px; border-radius: 20px;
+            font-size: 12px; font-family: inherit; cursor: pointer;
         }
-        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .info-box {
-            background: #fff5f7;
-            border-right: 4px solid #8B1538;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
+
+        /* Tabs */
+        .tabs {
+            display: flex; background: white;
+            border-bottom: 2px solid #e5e7eb;
+            position: sticky; top: 57px; z-index: 99;
         }
-        .info-box p { color: #555; line-height: 1.6; }
-        .success-message {
+
+        .tab-btn {
+            flex: 1; padding: 13px 6px;
+            border: none; background: transparent;
+            font-size: 13px; font-weight: 600; font-family: inherit;
+            cursor: pointer; color: #888;
+            border-bottom: 3px solid transparent; margin-bottom: -2px;
+            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+
+        .tab-btn.active { color: var(--red); border-bottom-color: var(--red); background: #fff8f8; }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* Content wrapper */
+        .pane-wrap { max-width: 540px; margin: 0 auto; padding: 18px 16px 40px; }
+
+        /* ========== REGISTRATION TAB ========== */
+        .form-card {
+            background: white; border-radius: 14px;
+            padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        }
+
+        .form-card h2 { font-size: 16px; color: var(--red); margin-bottom: 16px; font-weight: 700; }
+
+        .fgroup { margin-bottom: 16px; }
+        .fgroup label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 5px; }
+        .fgroup input, .fgroup select {
+            width: 100%; padding: 11px 13px;
+            border: 2px solid #e0e0e0; border-radius: 9px;
+            font-size: 15px; font-family: inherit; transition: border-color 0.2s;
+        }
+        .fgroup input:focus, .fgroup select:focus { outline: none; border-color: var(--red); }
+
+        .req { color: #e74c3c; }
+
+        .reg-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--red-dark), var(--red-light));
+            color: white; border: none; border-radius: 10px;
+            font-size: 16px; font-weight: 700; font-family: inherit;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .reg-btn:hover { opacity: 0.9; }
+        .reg-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Success box */
+        .success-box {
+            display: none; margin-top: 16px;
+            background: var(--green-bg); border: 2px solid var(--green);
+            border-radius: 12px; padding: 20px; text-align: center;
+        }
+        .success-box.show { display: block; }
+        .success-box h3 { color: var(--green); font-size: 18px; margin-bottom: 8px; }
+
+        .order-badge {
+            display: inline-block; margin: 10px auto;
+            background: white; border: 3px solid var(--red);
+            border-radius: 12px; padding: 14px 24px;
+            font-size: 28px; font-weight: 800; color: var(--red);
+            letter-spacing: 2px; font-family: monospace;
+        }
+
+        .sms-tag {
+            margin-top: 10px; padding: 8px 12px;
+            border-radius: 8px; font-size: 13px;
+        }
+        .sms-tag.sending { background: #fff3cd; color: #856404; }
+        .sms-tag.ok      { background: var(--green-bg); color: var(--green); }
+        .sms-tag.fail    { background: #fee2e2; color: #991b1b; }
+
+        .new-reg-btn {
+            margin-top: 12px; padding: 10px 20px;
+            background: var(--red); color: white; border: none;
+            border-radius: 8px; font-size: 14px; font-family: inherit; cursor: pointer;
+        }
+
+        /* ========== SCANNER TAB ========== */
+        .scanner-card {
+            background: white; border-radius: 14px;
+            overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            margin-bottom: 14px;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--red-dark), var(--red));
+            color: white; padding: 12px 16px;
+            font-size: 14px; font-weight: 700;
+        }
+
+        .card-body { padding: 16px; }
+
+        #videoWrap {
+            position: relative; background: #000;
+            border-radius: 10px; overflow: hidden;
+            aspect-ratio: 1; max-width: 270px;
+            margin: 0 auto 12px; display: none;
+        }
+
+        #qrVideo { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        .scan-overlay {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none;
+        }
+
+        .scan-frame {
+            width: 65%; height: 65%;
+            border: 3px solid rgba(255,255,255,0.9); border-radius: 10px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.4); position: relative;
+        }
+
+        .scan-line {
+            position: absolute; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, #fff, transparent);
+            animation: sl 2s linear infinite;
+        }
+        @keyframes sl { 0%{top:5%} 100%{top:95%} }
+
+        .sc { position: absolute; width: 16px; height: 16px; border-color: var(--red-light); border-style: solid; }
+        .sc-tl { top:-3px; right:-3px; border-width: 3px 0 0 3px; border-radius: 3px 0 0 0; }
+        .sc-tr { top:-3px; left:-3px;  border-width: 3px 3px 0 0; border-radius: 0 3px 0 0; }
+        .sc-bl { bottom:-3px; right:-3px; border-width: 0 0 3px 3px; border-radius: 0 0 0 3px; }
+        .sc-br { bottom:-3px; left:-3px;  border-width: 0 3px 3px 0; border-radius: 0 0 3px 0; }
+
+        .scan-status { text-align: center; font-size: 13px; color: var(--gray); margin-bottom: 10px; }
+
+        .start-scan-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--red-dark), var(--red-light));
+            color: white; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700; font-family: inherit;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        .stop-scan-btn {
+            width: 100%; padding: 11px; margin-top: 8px;
+            background: var(--gray-light); color: #555; border: none;
+            border-radius: 10px; font-size: 14px; font-family: inherit; cursor: pointer;
             display: none;
-            background: #d4edda;
-            border: 2px solid #28a745;
-            color: #155724;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            text-align: center;
         }
-        .success-message.show { display: block; }
-        .barcode-container {
-            margin-top: 20px;
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
+
+        .manual-section {
+            margin-top: 14px; padding-top: 14px;
+            border-top: 1px dashed #e5e7eb;
         }
-        #qrcode { margin: 20px auto; display: flex; justify-content: center; }
-        .print-btn {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
+        .manual-lbl { font-size: 12px; color: #aaa; text-align: center; margin-bottom: 8px; }
+        .manual-row { display: flex; gap: 8px; }
+        .manual-inp {
+            flex: 1; padding: 10px 12px;
+            border: 2px solid #e5e7eb; border-radius: 8px;
+            font-size: 14px; font-family: inherit;
+            text-align: center; text-transform: uppercase;
         }
-        .sms-status {
-            margin-top: 15px;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            text-align: center;
+        .manual-inp:focus { outline: none; border-color: var(--red); }
+        .manual-go {
+            padding: 10px 14px; background: var(--red); color: white;
+            border: none; border-radius: 8px; font-size: 14px;
+            font-family: inherit; cursor: pointer;
         }
-        .sms-status.sending { background: #fff3cd; color: #856404; }
-        .sms-status.success { background: #d4edda; color: #155724; }
-        .sms-status.error { background: #f8d7da; color: #721c24; }
+
+        /* Result card */
+        #resultCard {
+            background: white; border-radius: 14px;
+            overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            margin-bottom: 14px; display: none;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+        .res-head { padding: 13px 16px; font-weight: 700; font-size: 15px; color: white; }
+        .res-head.ok   { background: var(--green); }
+        .res-head.warn { background: var(--orange); }
+        .res-head.err  { background: #dc2626; }
+        .res-head.other-branch { background: #7c3aed; }
+
+        .res-body { padding: 16px; }
+
+        .rrow {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px;
+        }
+        .rrow:last-child { border-bottom: none; }
+        .rkey { color: var(--gray); }
+        .rval { font-weight: 700; }
+
+        .badge-ok   { background: var(--green-bg); color: var(--green); padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .badge-warn { background: var(--orange-bg); color: var(--orange); padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+
+        .res-actions { padding: 0 16px 16px; display: flex; gap: 8px; }
+
+        .confirm-btn {
+            flex: 1; padding: 13px; background: var(--green);
+            color: white; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer;
+        }
+        .confirm-btn:disabled { opacity: 0.5; }
+        .cancel-btn {
+            padding: 13px 16px; background: var(--gray-light); color: #555;
+            border: none; border-radius: 10px; font-size: 14px;
+            font-family: inherit; cursor: pointer;
+        }
+
+        /* ========== LIST TAB ========== */
+        .list-toolbar {
+            background: white; border-radius: 14px; padding: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07); margin-bottom: 12px;
+            display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+        }
+
+        .search-inp {
+            flex: 1; min-width: 150px; padding: 10px 13px;
+            border: 2px solid #e5e7eb; border-radius: 9px;
+            font-size: 14px; font-family: inherit;
+        }
+        .search-inp:focus { outline: none; border-color: var(--red); }
+
+        .filter-btn {
+            padding: 9px 14px; border: 2px solid #e5e7eb; border-radius: 9px;
+            background: white; font-size: 13px; font-family: inherit; cursor: pointer;
+        }
+        .filter-btn.active { background: var(--red); color: white; border-color: var(--red); }
+
+        .list-stats {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px; margin-bottom: 12px;
+        }
+
+        .lstat {
+            background: white; border-radius: 12px; padding: 12px;
+            text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .lstat-num { font-size: 26px; font-weight: 800; color: var(--red); }
+        .lstat-lbl { font-size: 11px; color: var(--gray); margin-top: 2px; }
+
+        .client-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .client-card {
+            background: white; border-radius: 12px; padding: 14px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+
+        .client-info { flex: 1; min-width: 0; }
+        .client-name { font-size: 15px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px; }
+        .client-meta { font-size: 12px; color: var(--gray); }
+        .client-order { font-size: 12px; color: var(--red); font-family: monospace; font-weight: 600; }
+
+        .status-pill {
+            padding: 5px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 700; white-space: nowrap; flex-shrink: 0;
+        }
+        .pill-ok   { background: var(--green-bg); color: var(--green); }
+        .pill-wait { background: #fef3c7; color: #92400e; }
+
+        .list-empty {
+            text-align: center; padding: 40px 20px;
+            color: var(--gray); font-size: 15px;
+        }
+
+        .refresh-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 9px 14px; border: 2px solid #e5e7eb; border-radius: 9px;
+            background: white; font-size: 13px; font-family: inherit; cursor: pointer;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 28px; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #1a1a1a; color: white;
+            padding: 11px 22px; border-radius: 50px;
+            font-size: 14px; font-weight: 600;
+            opacity: 0; transition: all 0.3s;
+            pointer-events: none; z-index: 999; white-space: nowrap;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.green  { background: var(--green); }
+        .toast.orange { background: var(--orange); }
+        .toast.red    { background: #dc2626; }
+
+        @media (max-width: 400px) {
+            .tab-btn { font-size: 12px; padding: 12px 4px; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
-                <a href="home.html" style="display: block; cursor: pointer; text-decoration: none;">
-                    <div style="width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-                        <svg width="72" height="72" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="47" fill="#C1272D"/>
-                            <path d="M 28 46 L 50 26 L 72 46 L 72 41 L 50 21 L 28 41 Z" fill="white"/>
-                            <g transform="translate(35, 41)">
-                                <circle cx="5" cy="5" r="3.5" fill="white"/>
-                                <circle cx="15" cy="5" r="3.5" fill="white"/>
-                                <circle cx="25" cy="5" r="3.5" fill="white"/>
-                                <rect x="2" y="10" width="26" height="18" fill="white" rx="2"/>
-                                <line x1="8" y1="14" x2="22" y2="14" stroke="#C1272D" stroke-width="1.5"/>
-                                <line x1="8" y1="18" x2="22" y2="18" stroke="#C1272D" stroke-width="1.5"/>
-                                <line x1="8" y1="22" x2="18" y2="22" stroke="#C1272D" stroke-width="1.5"/>
-                            </g>
-                        </svg>
-                    </div>
-                </a>
-                <div style="flex: 1; min-width: 200px;">
-                    <h1>רישום משפחות</h1>
-                    <p>בית תמחוי מאיר פנים</p>
-                </div>
-            </div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ========== LOGIN ========== -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="login-logo">❤️</div>
+        <div class="login-title">מאיר פנים</div>
+        <div class="login-sub">כניסה למנהל סניף</div>
+
+        <div class="inp-group">
+            <label>שם משתמש</label>
+            <input type="text" id="loginUser" placeholder="manager-jerusalem" autocomplete="username">
         </div>
+        <div class="inp-group">
+            <label>סיסמה</label>
+            <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="login-btn" id="loginBtn" onclick="doLogin()">כניסה</button>
+        <div class="login-err" id="loginErr"></div>
+    </div>
+</div>
 
-        <div class="form-section">
-            <div class="info-box">
-                <p>💡 אנא מלא את הטופס כדי להירשם למערכת החלוקה. לאחר הרישום תקבל SMS עם מספר הזמנה אישי.</p>
+<!-- ========== MAIN APP ========== -->
+<div id="mainApp">
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <button class="logout-btn" onclick="doLogout()">יציאה</button>
+        <div class="topbar-right">
+            <div class="topbar-info">
+                <div class="topbar-name" id="topName"></div>
+                <div class="topbar-branch" id="topBranch"></div>
             </div>
+            <span style="font-size:28px;">❤️</span>
+        </div>
+    </div>
 
-            <form id="registrationForm">
-                <div class="form-group">
-                    <label>שם מלא <span class="required">*</span></label>
-                    <input type="text" id="fullName" required placeholder="הכנס שם מלא">
-                </div>
-                <div class="form-group">
-                    <label>מספר תעודת זהות <span class="required">*</span></label>
-                    <input type="text" id="idNumber" required placeholder="9 ספרות" maxlength="9">
-                </div>
-                <div class="form-group">
-                    <label>מספר טלפון <span class="required">*</span></label>
-                    <input type="tel" id="phone" required placeholder="050-1234567">
-                </div>
-                <div class="form-group">
-                    <label>עיר <span class="required">*</span></label>
-                    <select id="city" required>
-                        <option value="">בחר עיר</option>
-                        <option value="ירושלים">ירושלים</option>
-                        <option value="צפת">צפת</option>
-                        <option value="דימונה">דימונה</option>
-                        <option value="אור עקיבא">אור עקיבא</option>
-                        <option value="טבריה">טבריה</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>סוג חבילה <span class="required">*</span></label>
-                    <select id="packageType" required>
-                        <option value="">בחר סוג חבילה</option>
-                        <option value="חבילת מזון">חבילת מזון</option>
-                        <option value="תלוש/שובר">תלוש/שובר</option>
-                        <option value="חבילה + שובר">חבילה + שובר</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>הערות (אופציונלי)</label>
-                    <input type="text" id="notes" placeholder="למשל: צרכים מיוחדים, אלרגיות">
-                </div>
-                <button type="submit" class="submit-btn" id="submitBtn">שלח רישום</button>
-            </form>
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" id="t0" onclick="switchTab(0)">📝 רישום</button>
+        <button class="tab-btn" id="t1" onclick="switchTab(1)">📷 סריקה</button>
+        <button class="tab-btn" id="t2" onclick="switchTab(2)">👥 רשימה</button>
+    </div>
 
-            <div id="successMessage" class="success-message">
-                <h2>✅ נרשמת בהצלחה למאיר פנים!</h2>
-                <p style="font-size: 16px; margin: 10px 0;">ברוכים הבאים למשפחת מאיר פנים</p>
-                <p>מספר הרישום שלך: <strong id="registrationNumber"></strong></p>
-                <div class="barcode-container">
-                    <p><strong>מספר ההזמנה האישי שלך:</strong></p>
-                    <div id="qrcode"></div>
-                    <div id="smsStatus" class="sms-status sending">📱 שולח SMS...</div>
-                    <button class="print-btn" onclick="window.print()">🖨️ הדפס תלוש</button>
+    <!-- ========== TAB 0: REGISTRATION ========== -->
+    <div class="tab-pane active" id="pane0">
+        <div class="pane-wrap">
+            <div class="form-card">
+                <h2>📝 רישום לקוח חדש</h2>
+                <form id="regForm">
+                    <div class="fgroup">
+                        <label>שם מלא <span class="req">*</span></label>
+                        <input type="text" id="fName" required placeholder="שם מלא">
+                    </div>
+                    <div class="fgroup">
+                        <label>מספר תעודת זהות <span class="req">*</span></label>
+                        <input type="text" id="fId" required placeholder="9 ספרות" maxlength="9" pattern="\d{9}">
+                    </div>
+                    <div class="fgroup">
+                        <label>מספר טלפון <span class="req">*</span></label>
+                        <input type="tel" id="fPhone" required placeholder="050-1234567">
+                    </div>
+                    <div class="fgroup">
+                        <label>סוג חבילה <span class="req">*</span></label>
+                        <select id="fPackage" required>
+                            <option value="">בחר סוג חבילה</option>
+                            <option value="חבילת מזון">חבילת מזון</option>
+                            <option value="תלוש/שובר">תלוש/שובר</option>
+                            <option value="חבילה + שובר">חבילה + שובר</option>
+                        </select>
+                    </div>
+                    <div class="fgroup">
+                        <label>הערות</label>
+                        <input type="text" id="fNotes" placeholder="צרכים מיוחדים, אלרגיות...">
+                    </div>
+                    <button type="submit" class="reg-btn" id="regBtn">שמור רישום ושלח SMS</button>
+                </form>
+
+                <div class="success-box" id="successBox">
+                    <h3>✅ נרשם בהצלחה!</h3>
+                    <div class="order-badge" id="orderBadge"></div>
+                    <div class="sms-tag sending" id="smsTag">📱 שולח SMS...</div>
+                    <button class="new-reg-btn" onclick="resetForm()">+ רישום חדש</button>
                 </div>
-                <p style="margin-top: 20px; font-size: 14px; color: #666;">
-                    נתראה בקרוב! צוות מאיר פנים ❤️
-                </p>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    <!-- ========== TAB 1: SCANNER ========== -->
+    <div class="tab-pane" id="pane1">
+        <div class="pane-wrap">
 
-        // ===== הגדרות =====
-        const WORKER_URL = 'https://meir-panim-sms.sssnoy81.workers.dev/send';
+            <div class="scanner-card">
+                <div class="card-header">📷 סריקת QR</div>
+                <div class="card-body">
+                    <div id="videoWrap">
+                        <video id="qrVideo" autoplay muted playsinline></video>
+                        <div class="scan-overlay">
+                            <div class="scan-frame">
+                                <div class="scan-line"></div>
+                                <div class="sc sc-tl"></div>
+                                <div class="sc sc-tr"></div>
+                                <div class="sc sc-bl"></div>
+                                <div class="sc sc-br"></div>
+                            </div>
+                        </div>
+                    </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAmaAzUatTV97LwL4VoVEUrJoVpnF612ig",
-            authDomain: "meir-panim-f27c4.firebaseapp.com",
-            projectId: "meir-panim-f27c4",
-            storageBucket: "meir-panim-f27c4.firebasestorage.app",
-            messagingSenderId: "252083260218",
-            appId: "1:252083260218:web:ea5e1e072aed819b8d1e03",
-            measurementId: "G-VXGZ0RHHD5"
+                    <div class="scan-status" id="scanStatus">לחץ להתחלת סריקה</div>
+
+                    <button class="start-scan-btn" id="startBtn" onclick="startScanner()">
+                        <span>📷</span> התחל סריקה
+                    </button>
+                    <button class="stop-scan-btn" id="stopBtn" onclick="stopScanner()">עצור סריקה</button>
+
+                    <div class="manual-section">
+                        <div class="manual-lbl">או הכנס מספר הזמנה ידנית</div>
+                        <div class="manual-row">
+                            <input class="manual-inp" id="manualInp" placeholder="MP12345678"
+                                   onkeydown="if(event.key==='Enter') searchManual()">
+                            <button class="manual-go" onclick="searchManual()">חפש</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div id="resultCard">
+                <div class="res-head" id="resHead"></div>
+                <div class="res-body" id="resBody"></div>
+                <div class="res-actions" id="resActions"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ========== TAB 2: LIST ========== -->
+    <div class="tab-pane" id="pane2">
+        <div class="pane-wrap">
+
+            <div class="list-stats">
+                <div class="lstat">
+                    <div class="lstat-num" id="lsTotal">-</div>
+                    <div class="lstat-lbl">סה"כ נרשמים</div>
+                </div>
+                <div class="lstat">
+                    <div class="lstat-num" id="lsDelivered">-</div>
+                    <div class="lstat-lbl">קיבלו חבילה</div>
+                </div>
+                <div class="lstat">
+                    <div class="lstat-num" id="lsPending">-</div>
+                    <div class="lstat-lbl">ממתינים</div>
+                </div>
+            </div>
+
+            <div class="list-toolbar">
+                <input class="search-inp" id="searchInp" placeholder="🔍 חפש שם או מספר..." oninput="renderList()">
+                <button class="filter-btn active" id="fAll" onclick="setFilter('all')">הכל</button>
+                <button class="filter-btn" id="fWait" onclick="setFilter('waiting')">ממתינים</button>
+                <button class="filter-btn" id="fDone" onclick="setFilter('done')">קיבלו</button>
+                <button class="refresh-btn" onclick="loadList()">🔄</button>
+            </div>
+
+            <div class="client-list" id="clientList">
+                <div class="list-empty">טוען נתונים...</div>
+            </div>
+
+        </div>
+    </div>
+
+</div><!-- /mainApp -->
+
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, collection, addDoc, query, where,
+             getDocs, doc, updateDoc, serverTimestamp }
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    const WORKER_URL = 'https://meir-panim-sms.sssnoy81.workers.dev/send';
+    const DELIVERY_URL = 'https://meir-panim-sms.sssnoy81.workers.dev/delivery';
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAmaAzUatTV97LwL4VoVEUrJoVpnF612ig",
+        authDomain: "meir-panim-f27c4.firebaseapp.com",
+        projectId: "meir-panim-f27c4",
+        storageBucket: "meir-panim-f27c4.firebasestorage.app",
+        messagingSenderId: "252083260218",
+        appId: "1:252083260218:web:ea5e1e072aed819b8d1e03"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // ===== USERS DB (from users.js logic) =====
+    const USERS = {
+        'super-admin':      { level:3, name:'מנהל על',           branch:null },
+        'admin-main':       { level:2, name:'אדמין ראשי',         branch:null },
+        'manager-jerusalem':{ level:1, name:'מנהל סניף ירושלים',  branch:'ירושלים' },
+        'manager-tzfat':    { level:1, name:'מנהל סניף צפת',      branch:'צפת' },
+        'manager-dimona':   { level:1, name:'מנהל סניף דימונה',   branch:'דימונה' },
+        'manager-orakiva':  { level:1, name:'מנהל סניף אור עקיבא',branch:'אור עקיבא' },
+        'manager-tiberias': { level:1, name:'מנהל סניף טבריה',    branch:'טבריה' }
+    };
+    const PASS = 'MeirPanim2025';
+    const ALL_BRANCHES = ['ירושלים','צפת','דימונה','אור עקיבא','טבריה'];
+
+    let session = null;
+    let allClients = [];
+    let listFilter = 'all';
+    let scannerActive = false;
+    let videoStream = null;
+    let scanInterval = null;
+    let lastScanned = '';
+
+    // ===== LOGIN =====
+    window.doLogin = function() {
+        const u = document.getElementById('loginUser').value.trim().toLowerCase();
+        const p = document.getElementById('loginPass').value;
+        const errEl = document.getElementById('loginErr');
+        const btn = document.getElementById('loginBtn');
+
+        errEl.style.display = 'none';
+
+        if (!USERS[u] || p !== PASS) {
+            errEl.textContent = 'שם משתמש או סיסמה שגויים';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        session = { username: u, ...USERS[u] };
+        sessionStorage.setItem('mpSession', JSON.stringify(session));
+        showApp();
+    };
+
+    document.getElementById('loginPass').addEventListener('keydown', e => {
+        if (e.key === 'Enter') window.doLogin();
+    });
+
+    function showApp() {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('topName').textContent = session.name;
+        document.getElementById('topBranch').textContent =
+            session.branch ? 'סניף ' + session.branch : 'גישה לכל הסניפים';
+        loadList();
+    }
+
+    window.doLogout = function() {
+        stopScanner();
+        session = null;
+        sessionStorage.removeItem('mpSession');
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('loginUser').value = '';
+        document.getElementById('loginPass').value = '';
+    };
+
+    // Restore session
+    const saved = sessionStorage.getItem('mpSession');
+    if (saved) { session = JSON.parse(saved); showApp(); }
+
+    // ===== TABS =====
+    window.switchTab = function(idx) {
+        [0,1,2].forEach(i => {
+            document.getElementById('t'+i).classList.toggle('active', i===idx);
+            document.getElementById('pane'+i).classList.toggle('active', i===idx);
+        });
+        if (idx !== 1) stopScanner();
+        if (idx === 2) loadList();
+    };
+
+    // ===== REGISTRATION =====
+    document.getElementById('regForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('regBtn');
+        btn.disabled = true; btn.textContent = 'שומר...';
+
+        const city = session.branch || 'ירושלים'; // default for super admin
+        const regNum = 'MP' + Date.now().toString().slice(-8);
+
+        // Check for duplicate ID
+        const idVal = document.getElementById('fId').value.trim();
+        try {
+            const dupQ = query(collection(db,'registrations'), where('idNumber','==',idVal));
+            const dupSnap = await getDocs(dupQ);
+            if (!dupSnap.empty) {
+                showToast('⚠️ תעודת זהות כבר קיימת במערכת!', 'orange');
+                btn.disabled = false; btn.textContent = 'שמור רישום ושלח SMS';
+                return;
+            }
+        } catch(e) {}
+
+        const data = {
+            fullName:    document.getElementById('fName').value.trim(),
+            idNumber:    idVal,
+            phone:       document.getElementById('fPhone').value.trim(),
+            city:        city,
+            packageType: document.getElementById('fPackage').value,
+            notes:       document.getElementById('fNotes').value.trim(),
+            registrationDate: serverTimestamp(),
+            registrationNumber: regNum,
+            registeredBy: session.username,
+            packageReceived: false,
+            receivedDate: null
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        try {
+            await addDoc(collection(db,'registrations'), data);
 
-        const registrationForm = document.getElementById('registrationForm');
-        const successMessage = document.getElementById('successMessage');
-        const registrationNumberEl = document.getElementById('registrationNumber');
-        const submitBtn = document.getElementById('submitBtn');
+            document.getElementById('regForm').style.display = 'none';
+            document.getElementById('orderBadge').textContent = regNum;
+            document.getElementById('successBox').classList.add('show');
 
-        registrationForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'שומר...';
-
-            const registrationNumber = 'MP' + Date.now().toString().slice(-8);
-
-            const formData = {
-                fullName: document.getElementById('fullName').value,
-                idNumber: document.getElementById('idNumber').value,
-                phone: document.getElementById('phone').value || '',
-                city: document.getElementById('city').value,
-                packageType: document.getElementById('packageType').value,
-                notes: document.getElementById('notes').value || '',
-                registrationDate: serverTimestamp(),
-                registrationNumber: registrationNumber,
-                packageReceived: false,
-                receivedDate: null
-            };
-
-            try {
-                // 1. שמור ב-Firebase
-                await addDoc(collection(db, 'registrations'), formData);
-
-                // 2. הצג הצלחה
-                registrationNumberEl.textContent = registrationNumber;
-                registrationForm.style.display = 'none';
-                successMessage.classList.add('show');
-
-                // 3. הצג מספר הזמנה
-                const qrcodeDiv = document.getElementById('qrcode');
-                qrcodeDiv.innerHTML = `
-                    <div style="width: 280px; margin: 0 auto; border: 4px solid #8B1538; border-radius: 15px; padding: 30px 20px; background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%); box-shadow: 0 8px 20px rgba(0,0,0,0.15); text-align: center;">
-                        <div style="font-size: 16px; color: #666; margin-bottom: 15px; font-weight: 600;">📋 מספר ההזמנה שלך</div>
-                        <div style="font-size: 36px; font-weight: bold; color: #8B1538; letter-spacing: 2px; margin: 10px 0; word-break: break-all; line-height: 1.3;">${registrationNumber}</div>
-                        <div style="font-size: 14px; color: #999; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #ddd;">💡 הצג מספר זה בעמדת החלוקה</div>
-                    </div>
-                `;
-
-                // 4. שלח SMS דרך Cloudflare Worker
-                const smsStatus = document.getElementById('smsStatus');
-                if (formData.phone) {
-                    try {
-                        smsStatus.className = 'sms-status sending';
-                        smsStatus.textContent = '📱 שולח SMS...';
-
-                        const response = await fetch(WORKER_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                phone: formData.phone,
-                                name: formData.fullName,
-                                orderId: registrationNumber
-                            })
-                        });
-
-                        const result = await response.json();
-
-                        if (result.ok) {
-                            smsStatus.className = 'sms-status success';
-                            smsStatus.textContent = '✅ SMS נשלח לטלפון שלך!';
-                            console.log('✅ SMS נשלח בהצלחה:', result);
-                        } else {
-                            throw new Error(result.error || 'שגיאה בשליחת SMS');
-                        }
-                    } catch (smsError) {
-                        console.error('❌ שגיאה בשליחת SMS:', smsError);
-                        smsStatus.className = 'sms-status error';
-                        smsStatus.textContent = '⚠️ לא הצלחנו לשלוח SMS - שמור את מספר ההזמנה!';
-                    }
-                } else {
-                    smsStatus.className = 'sms-status error';
-                    smsStatus.textContent = '⚠️ לא הוזן מספר טלפון - שמור את מספר ההזמנה!';
+            // SMS
+            const smsEl = document.getElementById('smsTag');
+            if (data.phone) {
+                try {
+                    const res = await fetch(WORKER_URL, {
+                        method: 'POST',
+                        headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ phone: data.phone, name: data.fullName, orderId: regNum, city })
+                    });
+                    const r = await res.json();
+                    if (r.ok) { smsEl.className='sms-tag ok'; smsEl.textContent='✅ SMS נשלח!'; }
+                    else throw new Error();
+                } catch {
+                    smsEl.className='sms-tag fail'; smsEl.textContent='⚠️ SMS לא נשלח - שמור מספר הזמנה!';
                 }
-
-            } catch (error) {
-                console.error('Error:', error);
-                alert('שגיאה בשמירת הרישום. אנא נסה שוב.\n\n' + error.message);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'שלח רישום';
+            } else {
+                smsEl.className='sms-tag fail'; smsEl.textContent='⚠️ אין טלפון - שמור מספר הזמנה!';
             }
+
+        } catch(err) {
+            alert('שגיאה: ' + err.message);
+            btn.disabled = false; btn.textContent = 'שמור רישום ושלח SMS';
+        }
+    });
+
+    window.resetForm = function() {
+        document.getElementById('regForm').reset();
+        document.getElementById('regForm').style.display = 'block';
+        document.getElementById('successBox').classList.remove('show');
+        document.getElementById('regBtn').disabled = false;
+        document.getElementById('regBtn').textContent = 'שמור רישום ושלח SMS';
+    };
+
+    // ===== SCANNER =====
+    window.startScanner = async function() {
+        document.getElementById('scanStatus').textContent = 'מפעיל מצלמה...';
+        try {
+            videoStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width:{ideal:640}, height:{ideal:640} }
+            });
+            const video = document.getElementById('qrVideo');
+            video.srcObject = videoStream;
+            await video.play();
+
+            document.getElementById('videoWrap').style.display = 'block';
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'block';
+            document.getElementById('scanStatus').textContent = 'מכוון את קוד ה-QR למסגרת...';
+            scannerActive = true; lastScanned = '';
+
+            if ('BarcodeDetector' in window) {
+                const det = new BarcodeDetector({ formats: ['qr_code'] });
+                scanInterval = setInterval(async () => {
+                    if (!scannerActive) return;
+                    try {
+                        const codes = await det.detect(video);
+                        if (codes.length && codes[0].rawValue !== lastScanned) {
+                            lastScanned = codes[0].rawValue;
+                            handleCode(lastScanned);
+                        }
+                    } catch(e) {}
+                }, 300);
+            } else { loadZXing(); }
+
+        } catch(err) {
+            document.getElementById('scanStatus').textContent = 'שגיאה: אין גישה למצלמה';
+            showToast('אין גישה למצלמה', 'red');
+        }
+    };
+
+    function loadZXing() {
+        if (window._zxingLoaded) return;
+        const s = document.createElement('script');
+        s.src = 'https://unpkg.com/@zxing/library@latest/umd/index.min.js';
+        s.onload = () => {
+            window._zxingLoaded = true;
+            const reader = new ZXing.BrowserQRCodeReader();
+            reader.decodeFromVideoDevice(null, 'qrVideo', (result) => {
+                if (result && result.getText() !== lastScanned) {
+                    lastScanned = result.getText();
+                    handleCode(lastScanned);
+                }
+            });
+            window._zxing = reader;
+        };
+        document.head.appendChild(s);
+    }
+
+    window.stopScanner = function() {
+        scannerActive = false;
+        if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+        if (window._zxing) { window._zxing.reset(); window._zxing = null; window._zxingLoaded = false; }
+        if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+        document.getElementById('videoWrap').style.display = 'none';
+        document.getElementById('startBtn').style.display = 'flex';
+        document.getElementById('stopBtn').style.display = 'none';
+        document.getElementById('scanStatus').textContent = 'לחץ להתחלת סריקה';
+        lastScanned = '';
+    };
+
+    window.searchManual = function() {
+        const v = document.getElementById('manualInp').value.trim().toUpperCase();
+        if (v) handleCode(v);
+    };
+
+    async function handleCode(raw) {
+        const match = raw.match(/MP\d+/i);
+        const orderNum = match ? match[0].toUpperCase() : raw.toUpperCase();
+        document.getElementById('scanStatus').textContent = '🔍 מחפש: ' + orderNum;
+
+        try {
+            const q = query(collection(db,'registrations'), where('registrationNumber','==',orderNum));
+            const snap = await getDocs(q);
+
+            if (snap.empty) {
+                showResult('err', '❌ לא נמצא', orderNum, null, null, false);
+                showToast('הזמנה לא נמצאה', 'red');
+                return;
+            }
+
+            const d = snap.docs[0];
+            const data = d.data();
+            const already = data.packageReceived === true;
+
+            // Branch check for level 1 managers
+            const wrongBranch = session.level === 1 && data.city !== session.branch;
+
+            if (wrongBranch) {
+                showResult('other-branch', '⚠️ לקוח מסניף אחר', orderNum, data, d.id, already);
+            } else {
+                showResult(already ? 'warn' : 'ok',
+                    already ? '⚠️ כבר קיבל חבילה!' : '✅ נמצא!',
+                    orderNum, data, d.id, already);
+            }
+            stopScanner();
+
+        } catch(err) {
+            showToast('שגיאה בחיפוש', 'red');
+        }
+    }
+
+    function showResult(type, title, orderNum, data, docId, already) {
+        const card = document.getElementById('resultCard');
+        document.getElementById('resHead').className = 'res-head ' + type;
+        document.getElementById('resHead').textContent = title;
+
+        if (!data) {
+            document.getElementById('resBody').innerHTML =
+                `<div class="rrow"><span class="rkey">מספר הזמנה</span><span class="rval">${orderNum}</span></div>
+                 <div class="rrow"><span style="color:#dc2626">הזמנה לא קיימת במערכת</span></div>`;
+            document.getElementById('resActions').innerHTML =
+                `<button class="cancel-btn" style="width:100%" onclick="resetResult()">סגור</button>`;
+        } else {
+            const regDate = data.registrationDate?.toDate?.()?.toLocaleDateString('he-IL') || '-';
+            const recDate = data.receivedDate?.toDate?.()?.toLocaleDateString('he-IL') || '-';
+            document.getElementById('resBody').innerHTML = `
+                <div class="rrow"><span class="rkey">שם</span><span class="rval">${data.fullName||'-'}</span></div>
+                <div class="rrow"><span class="rkey">מס׳ הזמנה</span><span class="rval" style="color:var(--red);font-family:monospace">${orderNum}</span></div>
+                <div class="rrow"><span class="rkey">עיר</span><span class="rval">${data.city||'-'}</span></div>
+                <div class="rrow"><span class="rkey">סוג חבילה</span><span class="rval">${data.packageType||'-'}</span></div>
+                <div class="rrow"><span class="rkey">טלפון</span><span class="rval">${data.phone||'-'}</span></div>
+                <div class="rrow"><span class="rkey">תאריך רישום</span><span class="rval">${regDate}</span></div>
+                <div class="rrow"><span class="rkey">סטטוס</span>
+                    <span class="${already?'badge-warn':'badge-ok'}">${already?'⚠️ קיבל - '+recDate:'✅ טרם קיבל'}</span>
+                </div>
+                ${data.notes?`<div class="rrow"><span class="rkey">הערות</span><span class="rval">${data.notes}</span></div>`:''}
+            `;
+
+            const wrongBranch = type === 'other-branch';
+            if (wrongBranch) {
+                document.getElementById('resActions').innerHTML =
+                    `<button class="cancel-btn" style="width:100%;background:#f3e8ff;color:#7c3aed" onclick="resetResult()">
+                     לקוח זה שייך לסניף ${data.city} - אין גישה לאישור</button>`;
+            } else {
+                document.getElementById('resActions').innerHTML = `
+                    <button class="cancel-btn" onclick="resetResult()">ביטול</button>
+                    <button class="confirm-btn" id="confirmBtn"
+                        onclick="confirmDelivery('${docId}','${(data.fullName||'').replace(/'/g,'')}','${data.phone||''}','${orderNum}','${data.city||''}')">
+                        ${already ? '🔄 אשר שוב' : '✅ אשר מסירה'}
+                    </button>`;
+            }
+        }
+
+        card.style.display = 'block';
+        card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+
+    window.confirmDelivery = async function(docId, name, phone, orderNum, city) {
+        const btn = document.getElementById('confirmBtn');
+        if (btn) { btn.disabled=true; btn.textContent='שומר...'; }
+        try {
+            await updateDoc(doc(db,'registrations',docId), {
+                packageReceived: true,
+                receivedDate: serverTimestamp(),
+                receivedBy: session.username
+            });
+            showToast('✅ מסירה אושרה!', 'green');
+            if (phone) {
+                fetch(DELIVERY_URL, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ phone, name, orderId: orderNum, city })
+                }).catch(()=>{});
+            }
+            setTimeout(() => { resetResult(); loadList(); }, 1800);
+        } catch(e) {
+            showToast('שגיאה בשמירה', 'red');
+            if (btn) { btn.disabled=false; btn.textContent='אשר מסירה'; }
+        }
+    };
+
+    window.resetResult = function() {
+        document.getElementById('resultCard').style.display = 'none';
+        document.getElementById('manualInp').value = '';
+        document.getElementById('scanStatus').textContent = 'לחץ להתחלת סריקה';
+        lastScanned = '';
+    };
+
+    // ===== LIST =====
+    async function loadList() {
+        if (!session) return;
+        document.getElementById('clientList').innerHTML = '<div class="list-empty">טוען...</div>';
+        try {
+            let q;
+            if (session.level >= 2) {
+                // Super admin / main admin - all
+                q = query(collection(db,'registrations'));
+            } else {
+                // Branch manager - only their city
+                q = query(collection(db,'registrations'), where('city','==',session.branch));
+            }
+            const snap = await getDocs(q);
+            allClients = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            allClients.sort((a,b) => {
+                const ad = a.registrationDate?.toDate?.() || 0;
+                const bd = b.registrationDate?.toDate?.() || 0;
+                return bd - ad;
+            });
+            renderList();
+        } catch(e) {
+            document.getElementById('clientList').innerHTML = '<div class="list-empty">שגיאה בטעינה</div>';
+        }
+    }
+
+    window.setFilter = function(f) {
+        listFilter = f;
+        ['All','Wait','Done'].forEach(x => document.getElementById('f'+x)?.classList.remove('active'));
+        const map = {all:'All', waiting:'Wait', done:'Done'};
+        document.getElementById('f'+map[f])?.classList.add('active');
+        renderList();
+    };
+
+    window.renderList = function() {
+        const search = document.getElementById('searchInp').value.trim().toLowerCase();
+        let filtered = allClients.filter(c => {
+            if (listFilter === 'waiting' && c.packageReceived) return false;
+            if (listFilter === 'done' && !c.packageReceived) return false;
+            if (search) {
+                return (c.fullName||'').toLowerCase().includes(search) ||
+                       (c.registrationNumber||'').toLowerCase().includes(search) ||
+                       (c.idNumber||'').includes(search);
+            }
+            return true;
         });
 
-        // Print styles
-        const style = document.createElement('style');
-        style.textContent = `
-            @media print {
-                body * { visibility: hidden; }
-                .success-message, .success-message * { visibility: visible; }
-                .success-message { position: absolute; left: 0; top: 0; width: 100%; }
-                .print-btn { display: none; }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+        const total     = allClients.length;
+        const delivered = allClients.filter(c => c.packageReceived).length;
+        const pending   = total - delivered;
+        document.getElementById('lsTotal').textContent     = total;
+        document.getElementById('lsDelivered').textContent = delivered;
+        document.getElementById('lsPending').textContent   = pending;
+
+        if (!filtered.length) {
+            document.getElementById('clientList').innerHTML =
+                '<div class="list-empty">אין לקוחות להצגה</div>';
+            return;
+        }
+
+        document.getElementById('clientList').innerHTML = filtered.map(c => {
+            const date = c.registrationDate?.toDate?.()?.toLocaleDateString('he-IL') || '-';
+            const received = c.packageReceived;
+            return `<div class="client-card">
+                <div class="client-info">
+                    <div class="client-name">${c.fullName||'-'}</div>
+                    <div class="client-meta">${c.packageType||''} | ${session.level>=2?(c.city||''):''}  ${date}</div>
+                    <div class="client-order">${c.registrationNumber||''}</div>
+                </div>
+                <span class="status-pill ${received?'pill-ok':'pill-wait'}">
+                    ${received ? '✅ קיבל' : '⏳ ממתין'}
+                </span>
+            </div>`;
+        }).join('');
+    };
+
+    // ===== TOAST =====
+    window.showToast = function(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show' + (type?' '+type:'');
+        clearTimeout(window._tt);
+        window._tt = setTimeout(() => t.className='toast', 3000);
+    };
+</script>
 </body>
-                      </html>
-  
+</html>
