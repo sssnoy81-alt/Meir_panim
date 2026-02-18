@@ -3,557 +3,412 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>בית תמחוי מאיר פנים - רישום משפחות</title>
-    <meta name="description" content="מערכת רישום משפחות - בית תמחוי מאיר פנים">
-    <meta name="theme-color" content="#c0392b">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="icon.png">
-
-    <!-- QR Code library - works offline, no external API needed -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
+    <title>מאיר פנים - קוד QR שלך</title>
+    <meta name="theme-color" content="#8B1538">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', 'Arial Hebrew', Arial, sans-serif;
-            background: linear-gradient(135deg, #8B0000 0%, #c0392b 40%, #e74c3c 70%, #ff6b6b 100%);
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: linear-gradient(160deg, #8B1538 0%, #c0392b 50%, #e74c3c 100%);
             min-height: 100vh;
-            padding: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .container {
-            max-width: 600px;
-            width: 100%;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #8B0000, #c0392b);
-            color: white;
-            text-align: center;
             padding: 20px;
-            font-size: 20px;
-            font-weight: bold;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+            max-width: 420px;
+            width: 100%;
+            overflow: hidden;
+            animation: fadeUp 0.5s ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #8B1538, #c0392b);
+            padding: 28px 20px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .heart {
+            font-size: 52px;
+            display: block;
+            margin-bottom: 8px;
+            animation: heartbeat 1.5s ease infinite;
+        }
+
+        @keyframes heartbeat {
+            0%,100% { transform: scale(1); }
+            50%      { transform: scale(1.12); }
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
             letter-spacing: 1px;
         }
 
-        .content {
-            padding: 30px 25px;
+        .header p {
+            font-size: 13px;
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+
+        /* Warm message */
+        .warm-msg {
+            background: #fff8f8;
+            border-bottom: 1px solid #fde;
+            padding: 18px 24px;
             text-align: center;
         }
 
-        .success-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: #e8f5e9;
-            border: 2px solid #4CAF50;
-            border-radius: 50px;
-            padding: 10px 25px;
-            margin-bottom: 25px;
-            font-size: 18px;
-            color: #2e7d32;
-            font-weight: bold;
+        .warm-msg .greeting {
+            font-size: 20px;
+            font-weight: 700;
+            color: #8B1538;
+            margin-bottom: 6px;
         }
 
-        .success-badge .checkmark {
-            font-size: 22px;
-        }
-
-        .order-section {
-            border: 2px solid #8B0000;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-            background: #fafafa;
-        }
-
-        .order-label {
-            color: #555;
+        .warm-msg .subtitle {
             font-size: 14px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            color: #666;
+            line-height: 1.6;
         }
 
-        .order-number {
-            font-size: 32px;
-            font-weight: bold;
-            color: #8B0000;
+        /* Details */
+        .details {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            font-size: 14px;
+            border-bottom: 1px dashed #f0f0f0;
+        }
+
+        .detail-row:last-child { border-bottom: none; }
+
+        .detail-label { color: #888; }
+
+        .detail-value {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .order-value {
+            font-size: 18px;
+            color: #8B1538;
             letter-spacing: 2px;
             font-family: 'Courier New', monospace;
             cursor: pointer;
-            user-select: all;
         }
 
-        .order-number:hover {
-            background: #fff3f3;
-            border-radius: 6px;
-        }
+        .order-value:active { opacity: 0.7; }
 
-        .copy-hint {
-            font-size: 11px;
-            color: #999;
-            margin-top: 5px;
-        }
-
+        /* QR section */
         .qr-section {
-            margin: 20px 0;
+            padding: 20px;
+            text-align: center;
+            background: #fafafa;
         }
 
-        .qr-label {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 12px;
-        }
-
-        #qrcode {
-            display: inline-block;
-            padding: 12px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        #qrcode img,
-        #qrcode canvas {
-            display: block;
-        }
-
-        .qr-error {
-            color: #e74c3c;
+        .qr-title {
             font-size: 13px;
-            padding: 10px;
-            background: #fff5f5;
-            border-radius: 8px;
-            border: 1px solid #fcc;
+            color: #888;
+            margin-bottom: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
+        .qr-wrap {
+            display: inline-block;
+            background: white;
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 4px 20px rgba(139,21,56,0.15);
+            border: 2px solid #f5e0e5;
+        }
+
+        #qrCanvas { display: block; }
+
+        /* Instructions */
         .instructions {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            text-align: right;
+            padding: 16px 24px 20px;
+            background: white;
         }
 
-        .instruction-item {
+        .inst-item {
             display: flex;
             align-items: flex-start;
             gap: 10px;
             margin-bottom: 10px;
             font-size: 14px;
-            color: #444;
+            color: #555;
+            line-height: 1.5;
         }
 
-        .instruction-item:last-child {
-            margin-bottom: 0;
-        }
+        .inst-item:last-child { margin-bottom: 0; }
 
-        .instruction-icon {
-            font-size: 16px;
+        .inst-icon {
+            font-size: 18px;
             flex-shrink: 0;
             margin-top: 1px;
         }
 
-        .sms-section {
-            margin-top: 20px;
-            padding: 12px;
-            background: #e8f5e9;
-            border-radius: 10px;
-            font-size: 14px;
-            color: #2e7d32;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        /* Client info display */
-        .client-info {
-            background: #f0f4ff;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            text-align: right;
-        }
-
-        .client-info-title {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        .client-info-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            color: #333;
-            padding: 3px 0;
-            border-bottom: 1px solid #e0e8ff;
-        }
-
-        .client-info-row:last-child {
-            border-bottom: none;
-        }
-
-        .client-info-value {
-            font-weight: bold;
-            color: #8B0000;
-        }
-
-        .actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 10px 22px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-primary {
-            background: #8B0000;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #6b0000;
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-
-        .btn-print {
-            background: #2196F3;
-            color: white;
-        }
-
-        .btn-print:hover {
-            background: #1565C0;
-        }
-
-        .footer-note {
-            margin-top: 25px;
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #8B1538, #c0392b);
+            padding: 14px;
+            text-align: center;
+            color: rgba(255,255,255,0.8);
             font-size: 12px;
-            color: #999;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
         }
 
-        /* Copied tooltip */
-        .copied-msg {
+        /* Copy toast */
+        .toast {
             position: fixed;
-            top: 20px;
+            bottom: 30px;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) translateY(20px);
             background: #333;
             color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
+            padding: 10px 24px;
+            border-radius: 50px;
             font-size: 14px;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: all 0.3s;
             pointer-events: none;
-            z-index: 9999;
+            z-index: 999;
         }
-
-        .copied-msg.show {
+        .toast.show {
             opacity: 1;
-        }
-
-        @media print {
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; border-radius: 0; }
-            .actions { display: none; }
-            .header { background: #8B0000 !important; -webkit-print-color-adjust: exact; }
-        }
-
-        @media (max-width: 480px) {
-            .order-number { font-size: 26px; }
-            .content { padding: 20px 15px; }
+            transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
 <body>
 
-<div class="copied-msg" id="copiedMsg">✓ הועתק ללוח</div>
+<div class="toast" id="toast">✓ הועתק!</div>
 
-<div class="container">
+<div class="card">
+
+    <!-- Header -->
     <div class="header">
-        🍲 בית תמחוי מאיר פנים
+        <span class="heart">❤️</span>
+        <h1>מאיר פנים</h1>
+        <p>בית תמחוי לסיוע לנזקקים</p>
     </div>
 
-    <div class="content">
-
-        <!-- Success Badge -->
-        <div class="success-badge">
-            <span class="checkmark">✅</span>
-            <span>נרשמת בהצלחה!</span>
+    <!-- Warm message -->
+    <div class="warm-msg">
+        <div class="greeting" id="greetingText">הרשמתך התקבלה בהצלחה!</div>
+        <div class="subtitle">
+            אנו שמחים לסייע לך ולמשפחתך.<br>
+            שמור את הקוד הזה לצורך קבלת החבילה.
         </div>
-
-        <!-- Client Info (filled dynamically) -->
-        <div class="client-info" id="clientInfoSection" style="display:none;">
-            <div class="client-info-title">פרטי הרישום:</div>
-            <div class="client-info-row">
-                <span>שם:</span>
-                <span class="client-info-value" id="clientName">-</span>
-            </div>
-            <div class="client-info-row">
-                <span>סניף:</span>
-                <span class="client-info-value" id="clientBranch">-</span>
-            </div>
-            <div class="client-info-row">
-                <span>סוג חבילה:</span>
-                <span class="client-info-value" id="clientPackage">-</span>
-            </div>
-            <div class="client-info-row">
-                <span>תאריך רישום:</span>
-                <span class="client-info-value" id="clientDate">-</span>
-            </div>
-        </div>
-
-        <!-- Order Number -->
-        <div class="order-section">
-            <div class="order-label">
-                📋 מספר ההזמנה שלך
-            </div>
-            <div class="order-number" id="orderNumber" onclick="copyOrderNumber()" title="לחץ להעתקה">
-                טוען...
-            </div>
-            <div class="copy-hint">לחץ להעתקה</div>
-        </div>
-
-        <!-- QR Code -->
-        <div class="qr-section">
-            <div class="qr-label">📱 קוד QR לזיהוי מהיר</div>
-            <div id="qrcode"></div>
-        </div>
-
-        <!-- Instructions -->
-        <div class="instructions">
-            <div class="instruction-item">
-                <span class="instruction-icon">📱</span>
-                <span>הצג קוד QR זה למנהל החלוקה בעת קבלת החבילה</span>
-            </div>
-            <div class="instruction-item">
-                <span class="instruction-icon">💾</span>
-                <span>שמור את מספר ההזמנה שלך לצורך מעקב עתידי</span>
-            </div>
-            <div class="instruction-item">
-                <span class="instruction-icon">📞</span>
-                <span>לכל שאלה פנה לסניף הקרוב אליך</span>
-            </div>
-        </div>
-
-        <!-- SMS Confirmation -->
-        <div class="sms-section" id="smsSection" style="display:none;">
-            ✅ SMS נשלח לטלפון שלך
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="actions">
-            <button class="btn btn-primary" onclick="shareQR()">
-                📤 שתף
-            </button>
-            <button class="btn btn-print" onclick="window.print()">
-                🖨️ הדפס
-            </button>
-            <button class="btn btn-secondary" onclick="goHome()">
-                🏠 חזרה לדף הבית
-            </button>
-        </div>
-
-        <div class="footer-note">
-            מאיר פנים - עמותה לסיוע לנזקקים בישראל<br>
-            <small id="timestampDisplay"></small>
-        </div>
-
     </div>
+
+    <!-- Details -->
+    <div class="details">
+        <div class="detail-row" id="nameRow" style="display:none;">
+            <span class="detail-label">שם:</span>
+            <span class="detail-value" id="nameVal"></span>
+        </div>
+        <div class="detail-row" id="cityRow" style="display:none;">
+            <span class="detail-label">סניף:</span>
+            <span class="detail-value" id="cityVal"></span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">מספר הזמנה:</span>
+            <span class="detail-value order-value" id="orderVal" onclick="copyOrder()" title="לחץ להעתקה">-</span>
+        </div>
+    </div>
+
+    <!-- QR -->
+    <div class="qr-section">
+        <div class="qr-title">📱 קוד QR לזיהוי</div>
+        <div class="qr-wrap">
+            <canvas id="qrCanvas" width="220" height="220"></canvas>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+        <div class="inst-item">
+            <span class="inst-icon">📲</span>
+            <span>הצג קוד QR זה למנהל החלוקה בעת הגעתך</span>
+        </div>
+        <div class="inst-item">
+            <span class="inst-icon">🔖</span>
+            <span>שמור את הקישור מה-SMS לגישה מהירה בכל עת</span>
+        </div>
+        <div class="inst-item">
+            <span class="inst-icon">💛</span>
+            <span>מאיר פנים דואגים לכם - חג שמח!</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        עמותת מאיר פנים © | סיוע לנזקקים בישראל
+    </div>
+
 </div>
 
+<!-- QR מובנה לחלוטין -->
 <script>
-    // ============================
-    // Read URL parameters
-    // ============================
-    function getParams() {
-        const params = new URLSearchParams(window.location.search);
-        return {
-            orderNumber: params.get('order') || params.get('orderNumber') || params.get('id'),
-            name: params.get('name'),
-            branch: params.get('branch'),
-            packageType: params.get('package') || params.get('packageType'),
-            phone: params.get('phone'),
-            smsSent: params.get('sms') === 'true' || params.get('smsSent') === 'true'
-        };
+var QRGen=(function(){
+var ALPHANUM='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+function pb(arr,val,len){for(var i=len-1;i>=0;i--)arr.push((val>>i)&1);}
+function alphaEnc(s){
+    s=s.toUpperCase();var bits=[];
+    for(var i=0;i<s.length-1;i+=2){pb(bits,ALPHANUM.indexOf(s[i])*45+ALPHANUM.indexOf(s[i+1]),11);}
+    if(s.length%2===1)pb(bits,ALPHANUM.indexOf(s[s.length-1]),6);
+    return bits;
+}
+var EX=new Array(512),LG=new Array(256);
+(function(){var x=1;for(var i=0;i<255;i++){EX[i]=x;LG[x]=i;x<<=1;if(x&256)x^=285;}for(var i=255;i<512;i++)EX[i]=EX[i-255];})();
+function gm(a,b){return a&&b?EX[LG[a]+LG[b]]:0;}
+function rsGen(n){var g=[1];for(var i=0;i<n;i++){var ng=new Array(g.length+1).fill(0);for(var j=0;j<g.length;j++){ng[j]^=g[j];ng[j+1]^=gm(g[j],EX[i]);}g=ng;}return g;}
+function rsEnc(data,ec){
+    var gen=rsGen(ec),msg=data.slice();
+    for(var i=0;i<ec;i++)msg.push(0);
+    for(var i=0;i<data.length;i++){var c=msg[i];if(c)for(var j=1;j<gen.length;j++)msg[i+j]^=gm(gen[j],c);}
+    return msg.slice(data.length);
+}
+function b2B(bits){while(bits.length%8!==0)bits.push(0);var B=[];for(var i=0;i<bits.length;i+=8){var b=0;for(var j=0;j<8;j++)b=(b<<1)|bits[i+j];B.push(b);}return B;}
+function buildMatrix(text){
+    var N=25,M=[];
+    for(var i=0;i<N;i++)M.push(new Array(N).fill(-1));
+    function finder(r,c){for(var i=0;i<7;i++)for(var j=0;j<7;j++)M[r+i][c+j]=(i===0||i===6||j===0||j===6||(i>=2&&i<=4&&j>=2&&j<=4))?1:0;}
+    finder(0,0);finder(0,18);finder(18,0);
+    for(var i=0;i<8;i++){M[7][i]=0;M[7][N-1-i]=0;M[N-8][i]=0;M[i][7]=0;M[N-1-i][7]=0;M[i][N-8]=0;}
+    M[7][7]=0;M[7][N-8]=0;M[N-8][7]=0;
+    for(var i=8;i<N-8;i++){M[6][i]=i%2===0?1:0;M[i][6]=i%2===0?1:0;}
+    M[N-8][8]=1;
+    function align(r,c){for(var i=-2;i<=2;i++)for(var j=-2;j<=2;j++)M[r+i][c+j]=(Math.abs(i)===2||Math.abs(j)===2)?1:(i===0&&j===0?1:0);}
+    align(18,18);
+    for(var i=0;i<9;i++){if(M[8][i]===-1)M[8][i]=0;if(M[i][8]===-1)M[i][8]=0;}
+    for(var i=0;i<8;i++){if(M[8][N-1-i]===-1)M[8][N-1-i]=0;if(M[N-1-i][8]===-1)M[N-1-i][8]=0;}
+    var bits=[0,0,1,0];
+    pb(bits,text.length,9);
+    bits=bits.concat(alphaEnc(text));
+    for(var i=0;i<4&&bits.length<224;i++)bits.push(0);
+    while(bits.length%8!==0)bits.push(0);
+    var pad=[0xEC,0x11],pi=0;
+    while(bits.length<224){pb(bits,pad[pi%2],8);pi++;}
+    var dB=b2B(bits),eB=rsEnc(dB,16),aB=dB.concat(eB),aBI=[];
+    for(var i=0;i<aB.length;i++)pb(aBI,aB[i],8);
+    var bi=0,dir=-1;
+    for(var col=N-1;col>=0;col-=2){
+        if(col===6)col=5;
+        for(var rs=0;rs<N;rs++){
+            var r=dir===-1?(N-1-rs):rs;
+            for(var ci=0;ci<2;ci++){
+                var c=col-ci;
+                if(M[r][c]===-1){var bit=bi<aBI.length?aBI[bi++]:0;M[r][c]=((r+c)%2===0)?(bit^1):bit;}
+            }
+        }
+        dir=-dir;
+    }
+    var fmt=[1,0,1,0,1,0,0,0,0,0,1,0,0,1,0];
+    var fp1=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+    var fp2=[[N-1,8],[N-2,8],[N-3,8],[N-4,8],[N-5,8],[N-6,8],[N-7,8],[8,N-8],[8,N-7],[8,N-6],[8,N-5],[8,N-4],[8,N-3],[8,N-2],[8,N-1]];
+    for(var i=0;i<15;i++){M[fp1[i][0]][fp1[i][1]]=fmt[i];M[fp2[i][0]][fp2[i][1]]=fmt[i];}
+    return M;
+}
+return{
+    draw:function(canvasId,text,opts){
+        opts=opts||{};
+        var dark=opts.dark||'#000',light=opts.light||'#fff',size=opts.size||220;
+        var M=buildMatrix(text.toUpperCase()),N=M.length;
+        var cv=document.getElementById(canvasId);
+        cv.width=size;cv.height=size;
+        var ctx=cv.getContext('2d');
+        var cell=size/(N+8),off=cell*4;
+        ctx.fillStyle=light;ctx.fillRect(0,0,size,size);
+        ctx.fillStyle=dark;
+        for(var r=0;r<N;r++)for(var c=0;c<N;c++)
+            if(M[r][c]===1)ctx.fillRect(Math.floor(off+c*cell),Math.floor(off+r*cell),Math.ceil(cell),Math.ceil(cell));
+    }
+};
+})();
+
+// ============================
+// Init - קרא פרמטרים מה-URL
+// ============================
+(function init() {
+    const p = new URLSearchParams(window.location.search);
+    const orderId = p.get('id') || p.get('order') || '';
+    const name    = p.get('name') || '';
+    const city    = p.get('city') || '';
+
+    // הצג מספר הזמנה
+    if (orderId) {
+        document.getElementById('orderVal').textContent = orderId;
     }
 
-    // ============================
-    // Generate QR Code
-    // ============================
-    function generateQR(text) {
-        const container = document.getElementById('qrcode');
-        container.innerHTML = '';
+    // שם
+    if (name) {
+        document.getElementById('nameVal').textContent = decodeURIComponent(name);
+        document.getElementById('nameRow').style.display = 'flex';
+        document.getElementById('greetingText').textContent = 'שלום ' + decodeURIComponent(name) + '! 👋';
+    }
 
+    // עיר
+    if (city) {
+        document.getElementById('cityVal').textContent = decodeURIComponent(city);
+        document.getElementById('cityRow').style.display = 'flex';
+    }
+
+    // צייר QR
+    if (orderId) {
         try {
-            new QRCode(container, {
-                text: text,
-                width: 200,
-                height: 200,
-                colorDark: '#8B0000',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H
-            });
-        } catch (e) {
-            container.innerHTML = '<div class="qr-error">⚠️ שגיאה ביצירת קוד QR<br><small>' + e.message + '</small></div>';
+            QRGen.draw('qrCanvas', orderId, { dark: '#8B1538', light: '#FFFFFF', size: 220 });
+        } catch(e) {
+            document.getElementById('qrCanvas').outerHTML =
+                '<p style="padding:10px;color:#c0392b;">מספר הזמנה: ' + orderId + '</p>';
         }
+    } else {
+        document.getElementById('qrCanvas').outerHTML =
+            '<p style="padding:10px;color:#999;font-size:13px;">לא נמצא מספר הזמנה</p>';
     }
+})();
 
-    // ============================
-    // Copy order number
-    // ============================
-    function copyOrderNumber() {
-        const num = document.getElementById('orderNumber').textContent.trim();
-        if (navigator.clipboard && num !== 'טוען...') {
-            navigator.clipboard.writeText(num).then(() => showCopied());
-        } else {
-            // Fallback
-            const el = document.createElement('textarea');
-            el.value = num;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            showCopied();
-        }
+// העתקת מספר הזמנה
+function copyOrder() {
+    const val = document.getElementById('orderVal').textContent;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(val).then(showToast);
+    } else {
+        const el = document.createElement('textarea');
+        el.value = val; document.body.appendChild(el);
+        el.select(); document.execCommand('copy');
+        document.body.removeChild(el); showToast();
     }
+}
 
-    function showCopied() {
-        const msg = document.getElementById('copiedMsg');
-        msg.classList.add('show');
-        setTimeout(() => msg.classList.remove('show'), 2000);
-    }
-
-    // ============================
-    // Share
-    // ============================
-    function shareQR() {
-        const orderNum = document.getElementById('orderNumber').textContent.trim();
-        const text = `מספר הזמנה מאיר פנים: ${orderNum}`;
-        
-        if (navigator.share) {
-            navigator.share({
-                title: 'מאיר פנים - אישור רישום',
-                text: text,
-                url: window.location.href
-            });
-        } else {
-            copyOrderNumber();
-            alert('הקישור הועתק ללוח');
-        }
-    }
-
-    // ============================
-    // Go home
-    // ============================
-    function goHome() {
-        window.location.href = 'index.html';
-    }
-
-    // ============================
-    // Init
-    // ============================
-    function init() {
-        const p = getParams();
-
-        // Order number
-        let orderNum = p.orderNumber;
-        
-        // If no order number in URL, check localStorage (set by registration page)
-        if (!orderNum) {
-            orderNum = localStorage.getItem('lastOrderNumber') || 
-                       localStorage.getItem('orderNumber') ||
-                       sessionStorage.getItem('orderNumber');
-        }
-
-        if (orderNum) {
-            document.getElementById('orderNumber').textContent = orderNum;
-            generateQR(orderNum);
-        } else {
-            // Generate a placeholder if nothing found
-            const fallback = 'MP' + Math.floor(10000000 + Math.random() * 89999999);
-            document.getElementById('orderNumber').textContent = fallback;
-            generateQR(fallback);
-        }
-
-        // Client info
-        if (p.name || p.branch || p.packageType) {
-            document.getElementById('clientInfoSection').style.display = 'block';
-            if (p.name) document.getElementById('clientName').textContent = p.name;
-            if (p.branch) document.getElementById('clientBranch').textContent = p.branch;
-            if (p.packageType) document.getElementById('clientPackage').textContent = p.packageType;
-        }
-
-        // Also try localStorage for client info
-        const storedName = localStorage.getItem('clientName') || sessionStorage.getItem('clientName');
-        const storedBranch = localStorage.getItem('clientBranch') || sessionStorage.getItem('clientBranch');
-        const storedPackage = localStorage.getItem('clientPackage') || sessionStorage.getItem('clientPackage');
-        
-        if (storedName || storedBranch || storedPackage) {
-            document.getElementById('clientInfoSection').style.display = 'block';
-            if (storedName) document.getElementById('clientName').textContent = storedName;
-            if (storedBranch) document.getElementById('clientBranch').textContent = storedBranch;
-            if (storedPackage) document.getElementById('clientPackage').textContent = storedPackage;
-        }
-
-        // Date
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('he-IL', { 
-            day: '2-digit', month: '2-digit', year: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-        });
-        document.getElementById('clientDate').textContent = dateStr;
-        document.getElementById('timestampDisplay').textContent = 'נרשם בתאריך: ' + dateStr;
-
-        // SMS
-        if (p.smsSent) {
-            document.getElementById('smsSection').style.display = 'flex';
-        }
-    }
-
-    // Run on load
-    window.addEventListener('DOMContentLoaded', init);
+function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+}
 </script>
-
 </body>
 </html>
