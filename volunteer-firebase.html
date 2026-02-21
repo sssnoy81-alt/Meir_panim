@@ -422,6 +422,10 @@
             <label>סיסמה</label>
             <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
         </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;justify-content:flex-end;">
+            <label for="rememberMe" style="font-size:13px;color:#555;cursor:pointer;">זכור אותי</label>
+            <input type="checkbox" id="rememberMe" style="width:16px;height:16px;accent-color:#8B1538;cursor:pointer;">
+        </div>
         <button class="login-btn" id="loginBtn" onclick="doLogin()">כניסה</button>
         <div class="login-err" id="loginErr"></div>
     </div>
@@ -432,7 +436,10 @@
 
     <!-- Topbar -->
     <div class="topbar">
-        <button class="logout-btn" onclick="doLogout()">יציאה</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <a id="dashboardBtn" href="admin-firebase.html" style="display:none;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);color:white;padding:6px 13px;border-radius:20px;font-size:12px;text-decoration:none;">📊 לוח בקרה</a>
+            <button class="logout-btn" onclick="doLogout()">יציאה</button>
+        </div>
         <div class="topbar-right">
             <div class="topbar-info">
                 <div class="topbar-name" id="topName"></div>
@@ -620,9 +627,22 @@
     let lastScanned = '';
 
     // ===== LOGIN =====
+
+    // Load saved credentials
+    const savedCreds = localStorage.getItem('mpRemember');
+    if (savedCreds) {
+        try {
+            const c = JSON.parse(savedCreds);
+            document.getElementById('loginUser').value = c.u || '';
+            document.getElementById('loginPass').value = c.p || '';
+            document.getElementById('rememberMe').checked = true;
+        } catch(e) {}
+    }
+
     window.doLogin = function() {
         const u = document.getElementById('loginUser').value.trim().toLowerCase();
         const p = document.getElementById('loginPass').value;
+        const remember = document.getElementById('rememberMe').checked;
         const errEl = document.getElementById('loginErr');
         const btn = document.getElementById('loginBtn');
 
@@ -632,6 +652,13 @@
             errEl.textContent = 'שם משתמש או סיסמה שגויים';
             errEl.style.display = 'block';
             return;
+        }
+
+        // Save or clear credentials
+        if (remember) {
+            localStorage.setItem('mpRemember', JSON.stringify({ u, p }));
+        } else {
+            localStorage.removeItem('mpRemember');
         }
 
         session = { username: u, ...USERS[u] };
@@ -649,6 +676,10 @@
         document.getElementById('topName').textContent = session.name;
         document.getElementById('topBranch').textContent =
             session.branch ? 'סניף ' + session.branch : 'גישה לכל הסניפים';
+        // Show dashboard button only for admin/super-admin
+        if (session.level >= 2) {
+            document.getElementById('dashboardBtn').style.display = 'inline-block';
+        }
         loadList();
     }
 
@@ -660,6 +691,16 @@
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('loginUser').value = '';
         document.getElementById('loginPass').value = '';
+        // Keep remembered credentials if checkbox was checked
+        const savedCreds = localStorage.getItem('mpRemember');
+        if (savedCreds) {
+            try {
+                const c = JSON.parse(savedCreds);
+                document.getElementById('loginUser').value = c.u || '';
+                document.getElementById('loginPass').value = c.p || '';
+                document.getElementById('rememberMe').checked = true;
+            } catch(e) {}
+        }
     };
 
     // Restore session
