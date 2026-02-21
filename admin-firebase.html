@@ -433,20 +433,63 @@
 
     window.exportAdminToExcel = function() {
         if (!allAdminRegistrations.length) { alert("אין נתונים לייצוא"); return; }
-        let csv = "\uFEFF";
-        csv += "מספר הזמנה,שם,ת.ז,טלפון,עיר,סוג חבילה,סטטוס,הערות\n";
-        allAdminRegistrations.forEach(r => {
-            csv += [
-                r.registrationNumber||"", r.fullName||"", r.idNumber||"",
-                r.phone||"", r.city||"", r.packageType||"",
-                r.packageReceived ? "נמסר" : "ממתין",
-                (r.notes||"").replace(/,/g,";")
-            ].join(",") + "\n";
-        });
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+
+        const headers = ["מספר הזמנה","שם","ת.ז","טלפון","עיר","סוג חבילה","סטטוס","הערות"];
+
+        const rows = allAdminRegistrations.map(r => [
+            r.registrationNumber||"",
+            r.fullName||"",
+            r.idNumber||"",
+            r.phone||"",
+            r.city||"",
+            r.packageType||"",
+            r.packageReceived ? "נמסר" : "ממתין",
+            r.notes||""
+        ]);
+
+        // Build HTML table - Excel opens HTML files with full RTL/Hebrew support
+        const escape = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+        const headerRow = headers.map(h => `<th>${escape(h)}</th>`).join("");
+        const dataRows  = rows.map(row =>
+            "<tr>" + row.map(cell => `<td>${escape(cell)}</td>`).join("") + "</tr>"
+        ).join("");
+
+        const html = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:x="urn:schemas-microsoft-com:office:excel"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--[if gte mso 9]>
+<xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+<x:Name>דוח</x:Name>
+<x:WorksheetOptions><x:DisplayRightToLeft/></x:WorksheetOptions>
+</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml>
+<![endif]-->
+<style>
+  body { direction: rtl; font-family: Arial, sans-serif; }
+  table { border-collapse: collapse; width: 100%; direction: rtl; }
+  th { background: #8B1538; color: white; padding: 8px 12px; border: 1px solid #ccc; font-size: 13px; }
+  td { padding: 7px 12px; border: 1px solid #ddd; font-size: 13px; }
+  tr:nth-child(even) td { background: #f9f9f9; }
+</style>
+</head>
+<body dir="rtl">
+<table dir="rtl">
+<thead><tr>${headerRow}</tr></thead>
+<tbody>${dataRows}</tbody>
+</table>
+</body>
+</html>`;
+
+        const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = `דוח_${userSession.branch||"כל_הסניפים"}_${new Date().toISOString().split("T")[0]}.csv`;
+        const branch = userSession.branch || "כל_הסניפים";
+        const date   = new Date().toISOString().split("T")[0];
+        a.download = `דוח_${branch}_${date}.xls`;
         a.click();
     };
 
