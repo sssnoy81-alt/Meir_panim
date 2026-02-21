@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מאיר פנים - ברוכים הבאים</title>
-    
-    <!-- PWA Meta Tags -->
     <meta name="description" content="מערכת ניהול חלוקת חבילות מזון - בית תמחוי מאיר פנים">
     <meta name="theme-color" content="#8B1538">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,18 +11,12 @@
     <meta name="apple-mobile-web-app-title" content="מאיר פנים">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
     <link rel="apple-touch-icon" href="icon-192.png">
-    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
             background: #000;
             min-height: 100vh;
             display: flex;
@@ -33,6 +25,7 @@
             overflow: hidden;
         }
 
+        /* ===== VIDEO MODE ===== */
         .intro-container {
             width: 100%;
             height: 100vh;
@@ -73,120 +66,206 @@
             transition: all 0.3s;
             z-index: 10;
         }
+        .skip-btn:hover { background: white; transform: scale(1.05); }
 
-        .skip-btn:hover {
-            background: white;
-            transform: scale(1.05);
-        }
-
-        .loading-text {
-            color: white;
-            font-size: 20px;
-            margin-top: 30px;
+        /* ===== SPLASH MODE (when no video) ===== */
+        .splash-container {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(160deg, #6b0f2a 0%, #8B1538 40%, #E4032E 100%);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            opacity: 0;
-            animation: fadeInOut 2s ease-in-out infinite;
+            padding: 30px;
         }
 
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
+        .splash-logo {
+            width: 140px;
+            height: 140px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        /* Mobile optimization */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 15px 50px rgba(0,0,0,0.4); }
+        }
+
+        .splash-title {
+            font-size: 42px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .splash-tagline {
+            font-size: 20px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 50px;
+        }
+
+        /* Progress bar */
+        .progress-wrap {
+            width: 220px;
+            height: 4px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            width: 0%;
+            animation: progress 3s linear forwards;
+        }
+        @keyframes progress { from { width: 0% } to { width: 100% } }
+
+        .splash-sub {
+            font-size: 14px;
+            color: rgba(255,255,255,0.65);
+        }
+
+        .splash-skip {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            padding: 10px 22px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* Fade out */
+        .fade-out { animation: fadeOut 0.6s ease-out forwards; }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
         @media (max-width: 768px) {
-            .video-wrapper {
-                max-width: 100%;
-                border-radius: 0;
-            }
-
-            .skip-btn {
-                bottom: 20px;
-                right: 20px;
-                padding: 10px 20px;
-                font-size: 14px;
-            }
-
-            .loading-text {
-                font-size: 16px;
-                padding: 0 20px;
-            }
-        }
-
-        /* Fade out animation */
-        .fade-out {
-            animation: fadeOut 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
+            .video-wrapper { max-width: 100%; border-radius: 0; }
+            .skip-btn { bottom: 20px; right: 20px; padding: 10px 20px; font-size: 14px; }
+            .splash-title { font-size: 34px; }
+            .splash-tagline { font-size: 17px; }
         }
     </style>
 </head>
 <body>
-    <div class="intro-container" id="introContainer">
+
+    <!-- VIDEO MODE -->
+    <div class="intro-container" id="videoContainer">
         <div class="video-wrapper">
             <video id="introVideo" autoplay muted playsinline>
                 <source src="intro-video.mp4" type="video/mp4">
-                הדפדפן שלך לא תומך בהצגת וידאו.
             </video>
-            <button class="skip-btn" onclick="skipIntro()">דלג ←</button>
+            <button class="skip-btn" onclick="goHome()">דלג ←</button>
         </div>
-        <div class="loading-text">מאיר פנים - מחלקים לחיים תקווה ואהבה ❤️</div>
+    </div>
+
+    <!-- SPLASH MODE (shown when no video) -->
+    <div class="splash-container" id="splashContainer">
+        <div class="splash-logo">
+            <svg width="110" height="110" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="47" fill="#C1272D"/>
+                <circle cx="50" cy="50" r="47" fill="none" stroke="url(#grad)" stroke-width="4"/>
+                <defs>
+                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFA500"/>
+                        <stop offset="50%" style="stop-color:#FF1493"/>
+                        <stop offset="100%" style="stop-color:#9333EA"/>
+                    </linearGradient>
+                </defs>
+                <path d="M 28 46 L 50 26 L 72 46 L 72 41 L 50 21 L 28 41 Z" fill="white"/>
+                <g transform="translate(35, 41)">
+                    <circle cx="5" cy="5" r="3.5" fill="white"/>
+                    <path d="M 2 12 Q 2 9, 5 9 Q 8 9, 8 12 L 8 16 L 2 16 Z" fill="white"/>
+                </g>
+                <g transform="translate(55, 41)">
+                    <circle cx="5" cy="5" r="3.5" fill="white"/>
+                    <path d="M 2 12 Q 2 9, 5 9 Q 8 9, 8 12 L 8 16 L 2 16 Z" fill="white"/>
+                </g>
+                <text x="50" y="70" font-family="Arial" font-size="15" font-weight="bold" fill="white" text-anchor="middle">מאיר</text>
+                <text x="50" y="86" font-family="Arial" font-size="15" font-weight="bold" fill="white" text-anchor="middle">פנים</text>
+            </svg>
+        </div>
+        <div class="splash-title">מאיר פנים</div>
+        <div class="splash-tagline">מחלקים לחיים תקווה ואהבה ❤️</div>
+        <div class="progress-wrap">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="splash-sub">טוען את המערכת...</div>
+        <button class="splash-skip" onclick="goHome()">דלג ←</button>
     </div>
 
     <script>
         const video = document.getElementById('introVideo');
-        const container = document.getElementById('introContainer');
+        const videoContainer = document.getElementById('videoContainer');
+        const splashContainer = document.getElementById('splashContainer');
+        let redirected = false;
 
-        // Redirect to home after video ends
-        video.addEventListener('ended', function() {
-            redirectToHome();
-        });
-
-        // Handle video error
-        video.addEventListener('error', function() {
-            console.log('Video failed to load, redirecting to home...');
-            setTimeout(redirectToHome, 1000);
-        });
-
-        // Skip button function
-        function skipIntro() {
-            redirectToHome();
+        function goHome() {
+            if (redirected) return;
+            redirected = true;
+            document.body.style.animation = 'fadeOut 0.5s ease-out forwards';
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s';
+            setTimeout(() => { window.location.href = 'home.html'; }, 500);
         }
 
-        // Redirect with fade out animation
-        function redirectToHome() {
-            container.classList.add('fade-out');
-            setTimeout(function() {
-                window.location.href = 'home.html';
-            }, 500);
+        function showSplash() {
+            videoContainer.style.display = 'none';
+            splashContainer.style.display = 'flex';
+            // Auto redirect after 3.2 seconds (matches progress bar animation)
+            setTimeout(goHome, 3200);
         }
 
-        // Fallback: redirect after 8 seconds if video doesn't play
-        setTimeout(function() {
-            if (!video.ended && video.paused) {
-                console.log('Video may not be playing, redirecting...');
-                redirectToHome();
+        // Video ended → go home
+        video.addEventListener('ended', goHome);
+
+        // Video error or can't load → show splash instead
+        video.addEventListener('error', showSplash);
+
+        // Try to play
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(() => {
+                // Autoplay blocked or video missing → splash
+                showSplash();
+            });
+        }
+
+        // Safety net: if video doesn't start within 2 seconds → splash
+        setTimeout(() => {
+            if (video.readyState === 0 && !redirected) {
+                showSplash();
             }
-        }, 8000);
+        }, 2000);
 
-        // Try to play video (some browsers require user interaction)
-        video.play().catch(function(error) {
-            console.log('Autoplay prevented:', error);
-            // Show a play button or redirect after short delay
-            setTimeout(redirectToHome, 2000);
-        });
+        // Fallback: redirect after 10 seconds max even if video plays
+        setTimeout(() => {
+            if (!redirected) goHome();
+        }, 10000);
     </script>
 
-    <!-- PWA Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js')
-                    .then(reg => console.log('Service Worker registered'))
-                    .catch(err => console.log('Service Worker registration failed'));
+                    .then(() => console.log('SW registered'))
+                    .catch(err => console.log('SW error:', err));
             });
         }
     </script>
