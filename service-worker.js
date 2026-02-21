@@ -1,20 +1,21 @@
 // ===== MEIR PANIM SERVICE WORKER =====
 // גרסה - שנה את המספר הזה בכל עדכון!
-const VERSION = '2.0.2';
+const VERSION = '2.0.3';
 const CACHE_NAME = `meir-panim-v${VERSION}`;
 
 // קבצים לשמירה במטמון
 const STATIC_FILES = [
   '/',
+  '/index.html',
   '/home.html',
   '/login.html',
-  '/registration-firebase.html',
   '/volunteer-firebase.html',
   '/admin-firebase.html',
   '/users-config.js',
   '/manifest.json',
   '/icon-192.png',
-  '/icon-512.png'
+  '/icon-512.png',
+  '/intro-video.mp4'
 ];
 
 // ===== התקנה - מחק Cache ישן וטען חדש =====
@@ -22,9 +23,13 @@ self.addEventListener('install', event => {
   console.log(`[SW] Installing version ${VERSION}`);
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(STATIC_FILES);
+      // addAll נכשל אם קובץ אחד חסר - נשתמש ב-add בנפרד
+      return Promise.allSettled(
+        STATIC_FILES.map(file => cache.add(file).catch(e => {
+          console.warn(`[SW] Could not cache: ${file}`, e);
+        }))
+      );
     }).then(() => {
-      // כפה החלפה מיידית - לא מחכה לסגירת טאבים
       return self.skipWaiting();
     })
   );
@@ -44,28 +49,23 @@ self.addEventListener('activate', event => {
           })
       );
     }).then(() => {
-      // קח שליטה על כל הלקוחות מיד
       return self.clients.claim();
     })
   );
 });
 
-// ===== בקשות - Network First (תמיד מהרשת תחילה!) =====
+// ===== בקשות - Network First =====
 self.addEventListener('fetch', event => {
-  // דלג על בקשות שאינן GET
   if (event.request.method !== 'GET') return;
 
-  // דלג על בקשות חיצוניות (Firebase, Twilio וכו')
   const url = new URL(event.request.url);
   if (!url.origin.includes('github.io') && !url.origin.includes('localhost')) {
     return;
   }
 
   event.respondWith(
-    // נסה רשת תחילה
     fetch(event.request)
       .then(response => {
-        // אם הצליח - שמור במטמון ותחזיר
         if (response && response.status === 200) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then(cache => {
@@ -75,15 +75,14 @@ self.addEventListener('fetch', event => {
         return response;
       })
       .catch(() => {
-        // אם אין רשת - חזור למטמון
         return caches.match(event.request);
       })
   );
 });
 
-// ===== הודעה לעדכון =====
+// ===== הודעות =====
 self.addEventListener('message', event => {
-  if (event.data === 'skipWaiting') {
+  if (event.data === 'skipWaiting' || (event.data && event.data.type === 'SKIP_WAITING')) {
     self.skipWaiting();
   }
   if (event.data === 'getVersion') {
