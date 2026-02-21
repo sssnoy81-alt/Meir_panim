@@ -410,6 +410,11 @@
 <!-- ========== LOGIN ========== -->
 <div id="loginScreen">
     <div class="login-card">
+        <div style="text-align:left;margin-bottom:-8px;">
+            <a href="home.html" style="font-size:12px;color:#8B1538;text-decoration:none;opacity:0.7;">
+                ← דף הבית
+            </a>
+        </div>
         <div class="login-logo">❤️</div>
         <div class="login-title">מאיר פנים</div>
         <div class="login-sub">כניסה למנהל סניף</div>
@@ -437,7 +442,7 @@
     <!-- Topbar -->
     <div class="topbar">
         <div style="display:flex;gap:8px;align-items:center;">
-            <a id="dashboardBtn" href="admin-firebase.html" style="display:none;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);color:white;padding:6px 13px;border-radius:20px;font-size:12px;text-decoration:none;">📊 לוח בקרה</a>
+            <a id="dashboardBtn" href="#" onclick="goToDashboard()" style="display:none;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);color:white;padding:6px 13px;border-radius:20px;font-size:12px;text-decoration:none;">📊 לוח בקרה</a>
             <button class="logout-btn" onclick="doLogout()">יציאה</button>
         </div>
         <div class="topbar-right">
@@ -676,10 +681,8 @@
         document.getElementById('topName').textContent = session.name;
         document.getElementById('topBranch').textContent =
             session.branch ? 'סניף ' + session.branch : 'גישה לכל הסניפים';
-        // Show dashboard button only for admin/super-admin
-        if (session.level >= 2) {
-            document.getElementById('dashboardBtn').style.display = 'inline-block';
-        }
+        // Show dashboard button for all users
+        document.getElementById('dashboardBtn').style.display = 'inline-block';
         loadList();
     }
 
@@ -1050,6 +1053,25 @@
                 </span>
             </div>`;
         }).join('');
+    };
+
+    // ===== GO TO DASHBOARD =====
+    window.goToDashboard = function() {
+        // Pass session to admin page - store as meirPanimAuth format
+        const adminSession = {
+            hebrewName: session.name,
+            level: session.level,
+            branch: session.branch,
+            permissions: {
+                viewAll: session.level >= 2,
+                delete: session.level >= 3,
+                viewReports: true,
+                markDelivered: true
+            }
+        };
+        sessionStorage.setItem('meirPanimAuth', JSON.stringify(adminSession));
+        sessionStorage.setItem('meirPanimAuthTime', new Date().getTime().toString());
+        window.location.href = 'admin-firebase.html';
     };
 
     // ===== TOAST =====
