@@ -241,13 +241,13 @@
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, getDocs, doc, deleteDoc, query, where }
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // Module scripts can't access vars from regular scripts - read directly from sessionStorage
     const userSession = JSON.parse(sessionStorage.getItem("meirPanimAuth") || "null");
-    if (!userSession) { window.location.href = "login.html?redirect=admin-firebase.html"; }
+    if (!userSession) { window.location.href = "volunteer-firebase.html"; }
 
     const firebaseConfig = {
         apiKey: "AIzaSyAmaAzUatTV97LwL4VoVEUrJoVpnF612ig",
@@ -258,7 +258,8 @@
         appId: "1:252083260218:web:ea5e1e072aed819b8d1e03"
     };
 
-    const app = initializeApp(firebaseConfig);
+    // Prevent duplicate app initialization error
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     const db  = getFirestore(app);
 
     let allAdminRegistrations = [];
@@ -276,6 +277,13 @@
 
     async function updateDashboard() {
         try {
+            // Safety: if permissions missing (old session format), rebuild them
+            if (!userSession.permissions) {
+                userSession.permissions = {
+                    viewAll: userSession.level >= 2,
+                    delete: userSession.level >= 2
+                };
+            }
             let snap;
             if (userSession.permissions.viewAll) {
                 snap = await getDocs(collection(db, "registrations"));
@@ -305,6 +313,11 @@
             updateRecentRegistrations(regs);
         } catch(e) {
             console.error("Dashboard error:", e);
+            document.getElementById("recentRegistrations").innerHTML =
+                `<div style="color:red;padding:20px;font-size:14px;">
+                    ❌ שגיאה בטעינת נתונים:<br><strong>${e.message}</strong><br>
+                    <small>${e.code || ""}</small>
+                 </div>`;
         }
     }
 
