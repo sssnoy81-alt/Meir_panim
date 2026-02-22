@@ -730,12 +730,23 @@
         const regNum = 'MP' + Date.now().toString().slice(-8);
 
         // Check for duplicate ID
-        const idVal = document.getElementById('fId').value.trim();
+        const idVal   = document.getElementById('fId').value.trim();
+        const phoneVal = document.getElementById('fPhone').value.trim();
         try {
-            const dupQ = query(collection(db,'registrations'), where('idNumber','==',idVal));
-            const dupSnap = await getDocs(dupQ);
-            if (!dupSnap.empty) {
+            // בדיקת כפילות ת"ז
+            const dupIdQ = query(collection(db,'registrations'), where('idNumber','==',idVal));
+            const dupIdSnap = await getDocs(dupIdQ);
+            if (!dupIdSnap.empty) {
                 showToast('⚠️ תעודת זהות כבר קיימת במערכת!', 'orange');
+                btn.disabled = false; btn.textContent = 'שמור רישום ושלח SMS';
+                return;
+            }
+            // בדיקת כפילות טלפון
+            const dupPhoneQ = query(collection(db,'registrations'), where('phone','==',phoneVal));
+            const dupPhoneSnap = await getDocs(dupPhoneQ);
+            if (!dupPhoneSnap.empty) {
+                const existing = dupPhoneSnap.docs[0].data();
+                showToast(`⚠️ מספר טלפון כבר קיים עבור: ${existing.fullName}`, 'orange');
                 btn.disabled = false; btn.textContent = 'שמור רישום ושלח SMS';
                 return;
             }
