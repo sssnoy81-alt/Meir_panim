@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>לוח בקרה - מאיר פנים</title>
-    <meta name="description" content="מערכת ניהול חלוקת חבילות מזון - בית תמחוי מאיר פנים">
+    <meta name="description" content="מערכת ניהול חלוקת חבילות מזון - מרכז לרווחה משלימה מאיר פנים">
     <meta name="theme-color" content="#8B1538">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -404,20 +404,29 @@
                 </div>
                 <div>
                     ${userSession.permissions.delete
-                        ? `<button class="delete-btn" onclick="deleteRegistration(\'${reg.id}\', \'${(reg.fullName||"").replace(/\'/g,"")}\'")">🗑️ מחק</button>`
+                        ? `<button class=\"delete-btn\" data-id=\"${reg.id}\" data-name=\"${(reg.fullName||\"\")}\"
+                            onclick=\"deleteRegistration(this)\">🗑️ מחק</button>`
                         : ""}
                 </div>
             </div>`).join("");
     }
 
-    window.deleteRegistration = async function(docId, name) {
+    window.deleteRegistration = async function(btn) {
+        const docId = btn.dataset.id;
+        const name  = btn.dataset.name || "רשומה זו";
         if (!userSession.permissions.delete) { alert("אין הרשאה למחוק"); return; }
         if (!confirm(`למחוק את הרישום של ${name}?\n\nפעולה זו אינה ניתנת לביטול!`)) return;
+        btn.disabled = true;
+        btn.textContent = "...";
         try {
             await deleteDoc(doc(db, "registrations", docId));
-            alert("הרישום נמחק בהצלחה");
-            updateDashboard();
-        } catch(e) { alert("שגיאה: " + e.message); }
+            btn.closest(".registration-item").remove();
+            allAdminRegistrations = allAdminRegistrations.filter(r => r.id !== docId);
+        } catch(e) {
+            alert("שגיאה במחיקה: " + e.message);
+            btn.disabled = false;
+            btn.textContent = "🗑️ מחק";
+        }
     };
 
     window.filterAdminRegistrations = function() {
