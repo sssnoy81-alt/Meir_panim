@@ -33,7 +33,6 @@
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* Header */
         .header {
             background: linear-gradient(135deg, #8B1538, #c0392b);
             padding: 28px 20px 20px;
@@ -53,19 +52,9 @@
             50%      { transform: scale(1.12); }
         }
 
-        .header h1 {
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
+        .header h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+        .header p  { font-size: 13px; opacity: 0.85; margin-top: 4px; }
 
-        .header p {
-            font-size: 13px;
-            opacity: 0.85;
-            margin-top: 4px;
-        }
-
-        /* Warm message */
         .warm-msg {
             background: #fff8f8;
             border-bottom: 1px solid #fde;
@@ -73,24 +62,10 @@
             text-align: center;
         }
 
-        .warm-msg .greeting {
-            font-size: 20px;
-            font-weight: 700;
-            color: #8B1538;
-            margin-bottom: 6px;
-        }
+        .warm-msg .greeting { font-size: 20px; font-weight: 700; color: #8B1538; margin-bottom: 6px; }
+        .warm-msg .subtitle { font-size: 14px; color: #666; line-height: 1.6; }
 
-        .warm-msg .subtitle {
-            font-size: 14px;
-            color: #666;
-            line-height: 1.6;
-        }
-
-        /* Details */
-        .details {
-            padding: 16px 24px;
-            border-bottom: 1px solid #f0f0f0;
-        }
+        .details { padding: 16px 24px; border-bottom: 1px solid #f0f0f0; }
 
         .detail-row {
             display: flex;
@@ -102,13 +77,8 @@
         }
 
         .detail-row:last-child { border-bottom: none; }
-
         .detail-label { color: #888; }
-
-        .detail-value {
-            font-weight: 700;
-            color: #333;
-        }
+        .detail-value { font-weight: 700; color: #333; }
 
         .order-value {
             font-size: 18px;
@@ -120,86 +90,45 @@
 
         .order-value:active { opacity: 0.7; }
 
-        /* QR section */
-        .qr-section {
-            padding: 20px;
-            text-align: center;
-            background: #fafafa;
-        }
+        .qr-section { padding: 20px; text-align: center; background: #fafafa; }
 
         .qr-title {
-            font-size: 13px;
-            color: #888;
-            margin-bottom: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 13px; color: #888; margin-bottom: 14px;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
         }
 
         .qr-wrap {
-            display: inline-block;
-            background: white;
-            border-radius: 16px;
-            padding: 14px;
-            box-shadow: 0 4px 20px rgba(139,21,56,0.15);
+            display: inline-block; background: white; border-radius: 16px;
+            padding: 14px; box-shadow: 0 4px 20px rgba(139,21,56,0.15);
             border: 2px solid #f5e0e5;
         }
 
         #qrCanvas { display: block; }
 
-        /* Instructions */
-        .instructions {
-            padding: 16px 24px 20px;
-            background: white;
-        }
+        .instructions { padding: 16px 24px 20px; background: white; }
 
         .inst-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #555;
-            line-height: 1.5;
+            display: flex; align-items: flex-start; gap: 10px;
+            margin-bottom: 10px; font-size: 14px; color: #555; line-height: 1.5;
         }
 
         .inst-item:last-child { margin-bottom: 0; }
+        .inst-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
 
-        .inst-icon {
-            font-size: 18px;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        /* Footer */
         .footer {
             background: linear-gradient(135deg, #8B1538, #c0392b);
-            padding: 14px;
-            text-align: center;
-            color: rgba(255,255,255,0.8);
-            font-size: 12px;
+            padding: 14px; text-align: center;
+            color: rgba(255,255,255,0.8); font-size: 12px;
         }
 
-        /* Copy toast */
         .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
+            position: fixed; bottom: 30px; left: 50%;
             transform: translateX(-50%) translateY(20px);
-            background: #333;
-            color: white;
-            padding: 10px 24px;
-            border-radius: 50px;
-            font-size: 14px;
-            opacity: 0;
-            transition: all 0.3s;
-            pointer-events: none;
-            z-index: 999;
+            background: #333; color: white; padding: 10px 24px;
+            border-radius: 50px; font-size: 14px; opacity: 0;
+            transition: all 0.3s; pointer-events: none; z-index: 999;
         }
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
@@ -208,14 +137,12 @@
 
 <div class="card">
 
-    <!-- Header -->
     <div class="header">
         <span class="heart">❤️</span>
         <h1>מאיר פנים</h1>
-        <p>בית תמחוי לסיוע לנזקקים</p>
+        <p>מרכזים לרווחה משלימה</p>
     </div>
 
-    <!-- Warm message -->
     <div class="warm-msg">
         <div class="greeting" id="greetingText">הרשמתך התקבלה בהצלחה!</div>
         <div class="subtitle">
@@ -224,7 +151,6 @@
         </div>
     </div>
 
-    <!-- Details -->
     <div class="details">
         <div class="detail-row" id="nameRow" style="display:none;">
             <span class="detail-label">שם:</span>
@@ -240,7 +166,6 @@
         </div>
     </div>
 
-    <!-- QR -->
     <div class="qr-section">
         <div class="qr-title">📱 קוד QR לזיהוי</div>
         <div class="qr-wrap">
@@ -248,7 +173,6 @@
         </div>
     </div>
 
-    <!-- Instructions -->
     <div class="instructions">
         <div class="inst-item">
             <span class="inst-icon">📲</span>
@@ -264,14 +188,12 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <div class="footer">
-        עמותת מאיר פנים © | סיוע לנזקקים בישראל
+        עמותת מאיר פנים © | מרכזים לרווחה משלימה
     </div>
 
 </div>
 
-<!-- QR מובנה לחלוטין -->
 <script>
 var QRGen=(function(){
 var ALPHANUM='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
@@ -350,34 +272,25 @@ return{
 };
 })();
 
-// ============================
-// Init - קרא פרמטרים מה-URL
-// ============================
 (function init() {
     const p = new URLSearchParams(window.location.search);
     const orderId = p.get('id') || p.get('order') || '';
     const name    = p.get('name') || '';
     const city    = p.get('city') || '';
 
-    // הצג מספר הזמנה
-    if (orderId) {
-        document.getElementById('orderVal').textContent = orderId;
-    }
+    if (orderId) document.getElementById('orderVal').textContent = orderId;
 
-    // שם
     if (name) {
         document.getElementById('nameVal').textContent = decodeURIComponent(name);
         document.getElementById('nameRow').style.display = 'flex';
         document.getElementById('greetingText').textContent = 'שלום ' + decodeURIComponent(name) + '! 👋';
     }
 
-    // עיר
     if (city) {
         document.getElementById('cityVal').textContent = decodeURIComponent(city);
         document.getElementById('cityRow').style.display = 'flex';
     }
 
-    // צייר QR
     if (orderId) {
         try {
             QRGen.draw('qrCanvas', orderId, { dark: '#8B1538', light: '#FFFFFF', size: 220 });
@@ -391,7 +304,6 @@ return{
     }
 })();
 
-// העתקת מספר הזמנה
 function copyOrder() {
     const val = document.getElementById('orderVal').textContent;
     if (navigator.clipboard) {
