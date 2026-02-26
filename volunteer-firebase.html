@@ -102,6 +102,12 @@
 
         .topbar-right { display: flex; align-items: center; gap: 10px; }
 
+        .topbar-btn {
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35);
+            color: white; padding: 6px 13px; border-radius: 20px;
+            font-size: 12px; font-family: inherit; cursor: pointer;
+            text-decoration: none; display: inline-block;
+        }
         .logout-btn {
             background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35);
             color: white; padding: 6px 13px; border-radius: 20px;
@@ -442,7 +448,8 @@
     <!-- Topbar -->
     <div class="topbar">
         <div style="display:flex;gap:8px;align-items:center;">
-            <a id="dashboardBtn" href="#" onclick="goToDashboard()" style="display:none;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);color:white;padding:6px 13px;border-radius:20px;font-size:12px;text-decoration:none;">📊 לוח בקרה</a>
+            <a href="home.html" class="topbar-btn">🏠 דף הבית</a>
+            <a id="dashboardBtn" href="#" onclick="goToDashboard()" style="display:none;" class="topbar-btn">📊 לוח בקרה</a>
             <button class="logout-btn" onclick="doLogout()">יציאה</button>
         </div>
         <div class="topbar-right">
@@ -610,7 +617,6 @@
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
 
-    // ===== USERS DB (from users.js logic) =====
     const USERS = {
         'super-admin':      { level:3, name:'מנהל על',           branch:null },
         'admin-main':       { level:2, name:'אדמין ראשי',         branch:null },
@@ -621,7 +627,6 @@
         'manager-tiberias': { level:1, name:'מנהל סניף טבריה',    branch:'טבריה' }
     };
     const PASS = 'MeirPanim2025';
-    const ALL_BRANCHES = ['ירושלים','צפת','דימונה','אור עקיבא','טבריה'];
 
     let session = null;
     let allClients = [];
@@ -630,8 +635,6 @@
     let videoStream = null;
     let scanInterval = null;
     let lastScanned = '';
-
-    // ===== LOGIN =====
 
     // Load saved credentials
     const savedCreds = localStorage.getItem('mpRemember');
@@ -649,7 +652,6 @@
         const p = document.getElementById('loginPass').value;
         const remember = document.getElementById('rememberMe').checked;
         const errEl = document.getElementById('loginErr');
-        const btn = document.getElementById('loginBtn');
 
         errEl.style.display = 'none';
 
@@ -659,7 +661,6 @@
             return;
         }
 
-        // Save or clear credentials
         if (remember) {
             localStorage.setItem('mpRemember', JSON.stringify({ u, p }));
         } else {
@@ -681,7 +682,6 @@
         document.getElementById('topName').textContent = session.name;
         document.getElementById('topBranch').textContent =
             session.branch ? 'סניף ' + session.branch : 'גישה לכל הסניפים';
-        // Show dashboard button for all users
         document.getElementById('dashboardBtn').style.display = 'inline-block';
         loadList();
     }
@@ -694,7 +694,6 @@
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('loginUser').value = '';
         document.getElementById('loginPass').value = '';
-        // Keep remembered credentials if checkbox was checked
         const savedCreds = localStorage.getItem('mpRemember');
         if (savedCreds) {
             try {
@@ -706,11 +705,9 @@
         }
     };
 
-    // Restore session
     const saved = sessionStorage.getItem('mpSession');
     if (saved) { session = JSON.parse(saved); showApp(); }
 
-    // ===== TABS =====
     window.switchTab = function(idx) {
         [0,1,2].forEach(i => {
             document.getElementById('t'+i).classList.toggle('active', i===idx);
@@ -720,20 +717,17 @@
         if (idx === 2) loadList();
     };
 
-    // ===== REGISTRATION =====
     document.getElementById('regForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const btn = document.getElementById('regBtn');
         btn.disabled = true; btn.textContent = 'שומר...';
 
-        const city = session.branch || 'ירושלים'; // default for super admin
+        const city = session.branch || 'ירושלים';
         const regNum = 'MP' + Date.now().toString().slice(-8);
 
-        // Check for duplicate ID
         const idVal   = document.getElementById('fId').value.trim();
         const phoneVal = document.getElementById('fPhone').value.trim();
         try {
-            // בדיקת כפילות ת"ז
             const dupIdQ = query(collection(db,'registrations'), where('idNumber','==',idVal));
             const dupIdSnap = await getDocs(dupIdQ);
             if (!dupIdSnap.empty) {
@@ -741,7 +735,6 @@
                 btn.disabled = false; btn.textContent = 'שמור רישום ושלח SMS';
                 return;
             }
-            // בדיקת כפילות טלפון
             const dupPhoneQ = query(collection(db,'registrations'), where('phone','==',phoneVal));
             const dupPhoneSnap = await getDocs(dupPhoneQ);
             if (!dupPhoneSnap.empty) {
@@ -773,7 +766,6 @@
             document.getElementById('orderBadge').textContent = regNum;
             document.getElementById('successBox').classList.add('show');
 
-            // SMS
             const smsEl = document.getElementById('smsTag');
             if (data.phone) {
                 try {
@@ -806,7 +798,6 @@
         document.getElementById('regBtn').textContent = 'שמור רישום ושלח SMS';
     };
 
-    // ===== SCANNER =====
     window.startScanner = async function() {
         document.getElementById('scanStatus').textContent = 'מפעיל מצלמה...';
         try {
@@ -896,8 +887,6 @@
             const d = snap.docs[0];
             const data = d.data();
             const already = data.packageReceived === true;
-
-            // Branch check for level 1 managers
             const wrongBranch = session.level === 1 && data.city !== session.branch;
 
             if (wrongBranch) {
@@ -990,17 +979,14 @@
         lastScanned = '';
     };
 
-    // ===== LIST =====
     async function loadList() {
         if (!session) return;
         document.getElementById('clientList').innerHTML = '<div class="list-empty">טוען...</div>';
         try {
             let q;
             if (session.level >= 2) {
-                // Super admin / main admin - all
                 q = query(collection(db,'registrations'));
             } else {
-                // Branch manager - only their city
                 q = query(collection(db,'registrations'), where('city','==',session.branch));
             }
             const snap = await getDocs(q);
@@ -1066,9 +1052,7 @@
         }).join('');
     };
 
-    // ===== GO TO DASHBOARD =====
     window.goToDashboard = function() {
-        // Pass session to admin page - store as meirPanimAuth format
         const adminSession = {
             hebrewName: session.name,
             level: session.level,
@@ -1085,7 +1069,6 @@
         window.location.href = 'admin-firebase.html';
     };
 
-    // ===== TOAST =====
     window.showToast = function(msg, type) {
         const t = document.getElementById('toast');
         t.textContent = msg;
