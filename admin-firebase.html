@@ -13,7 +13,6 @@
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:#f5f5f5; direction:rtl; }
 
-        /* ===== LOGIN SCREEN ===== */
         #loginScreen {
             display:flex; align-items:center; justify-content:center;
             min-height:100vh;
@@ -42,7 +41,6 @@
         #loginErr { color:#dc3545; font-size:13px; min-height:18px; margin-bottom:8px; }
         .home-link { display:block; margin-top:16px; font-size:13px; color:#8B1538; text-decoration:none; }
 
-        /* ===== MAIN APP ===== */
         #mainApp { display:none; padding:20px; max-width:1400px; margin:0 auto; }
 
         .header {
@@ -71,7 +69,6 @@
             border-radius:8px; font-size:13px; display:inline-block;
         }
 
-        /* ===== STATS ===== */
         .stats-grid {
             display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
             gap:18px; margin-bottom:26px;
@@ -86,14 +83,12 @@
         .progress-bar-wrap { background:#e0e0e0; height:26px; border-radius:13px; overflow:hidden; margin-top:8px; }
         .progress-bar { height:100%; background:linear-gradient(90deg,#28a745,#20c997); transition:width 0.5s; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:13px; }
 
-        /* ===== PANELS ===== */
         .panel {
             background:white; padding:26px; border-radius:14px;
             box-shadow:0 3px 15px rgba(0,0,0,0.08); margin-bottom:26px;
         }
         .panel h2 { color:#8B1538; margin-bottom:18px; font-size:20px; }
 
-        /* Branch stats table */
         .branch-row {
             display:grid; grid-template-columns:2fr 1fr 1fr 1fr 2fr;
             padding:11px 14px; border-bottom:1px solid #eee; align-items:center; font-size:14px;
@@ -101,7 +96,6 @@
         .branch-row.header-row { background:#f8f9fa; font-weight:700; border-radius:8px; }
         .branch-row:hover:not(.header-row) { background:#f8f9fa; }
 
-        /* Package type cards */
         .pkg-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; }
         .pkg-card { border:2px solid #e5e7eb; border-radius:12px; padding:16px; text-align:center; position:relative; overflow:hidden; }
         .pkg-card::before { content:""; position:absolute; top:0; left:0; right:0; height:4px; }
@@ -117,7 +111,6 @@
         .pkg-progress { background:#e0e0e0; height:14px; border-radius:7px; overflow:hidden; }
         .pkg-progress-bar { height:100%; background:linear-gradient(90deg,#8B1538,#E4032E); }
 
-        /* Registration list */
         .search-box {
             width:100%; padding:11px; border:2px solid #e0e0e0;
             border-radius:8px; font-size:15px; margin-bottom:16px; font-family:inherit;
@@ -154,7 +147,7 @@
 </head>
 <body>
 
-<!-- ===== LOGIN SCREEN ===== -->
+<!-- LOGIN -->
 <div id="loginScreen">
     <div class="login-box">
         <div class="logo">❤️</div>
@@ -174,12 +167,13 @@
     </div>
 </div>
 
-<!-- ===== MAIN APP ===== -->
+<!-- MAIN APP -->
 <div id="mainApp">
     <div class="header">
         <div class="header-top">
             <h1>📊 לוח בקרה</h1>
             <div class="header-btns">
+                <a href="home.html" class="back-btn">🏠 דף הבית</a>
                 <a href="volunteer-firebase.html" class="back-btn">🤝 מנהל סניף</a>
                 <button class="logout-btn" onclick="doLogout()">🚪 התנתק</button>
             </div>
@@ -216,19 +210,16 @@
         </div>
     </div>
 
-    <!-- Branch stats - only for admin-main and super-admin -->
     <div class="panel" id="branchPanel" style="display:none;">
         <h2>📍 סטטיסטיקות לפי סניף</h2>
         <div id="branchStats"><div class="loading">טוען...</div></div>
     </div>
 
-    <!-- Package type breakdown -->
     <div class="panel">
         <h2>📦 פילוח לפי סוג חבילה</h2>
         <div id="packageStats"><div class="loading">טוען...</div></div>
     </div>
 
-    <!-- Recent registrations -->
     <div class="panel">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
             <h2 style="margin:0;">📋 רישומים אחרונים</h2>
@@ -246,7 +237,6 @@ import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebase
 import { getFirestore, collection, getDocs, doc, deleteDoc, query, where }
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// ===== CONFIG =====
 const PASS = 'MeirPanim2025';
 const USERS = {
     'super-admin':       { level:3, name:'מנהל על',            branch:null },
@@ -271,11 +261,9 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const db  = getFirestore(app);
 
-let session = null;       // { username, level, name, branch }
-let allRegs = [];         // all loaded registrations
+let session = null;
+let allRegs = [];
 
-// ===== AUTH =====
-// Try to restore session from sessionStorage (set by volunteer-firebase via goToDashboard)
 function tryRestoreSession() {
     const raw  = sessionStorage.getItem('meirPanimAuth');
     const time = sessionStorage.getItem('meirPanimAuthTime');
@@ -286,7 +274,6 @@ function tryRestoreSession() {
         return false;
     }
     const data = JSON.parse(raw);
-    // Build session in our format from stored data
     session = {
         username: data.username || '',
         level:    data.level,
@@ -303,19 +290,16 @@ function startApp() {
     document.getElementById('userBranch').textContent =
         session.branch ? 'סניף: ' + session.branch :
         session.level >= 3 ? 'Super Admin' : 'Admin ראשי';
-    // Show branch panel only for level >= 2 (sees all branches)
     if (session.level >= 2) {
         document.getElementById('branchPanel').style.display = 'block';
     }
     loadData();
 }
 
-// Try restore on page load
 if (tryRestoreSession()) {
     startApp();
 }
 
-// ===== LOGIN =====
 window.doLogin = function() {
     const u = document.getElementById('loginUser').value.trim().toLowerCase();
     const p = document.getElementById('loginPass').value;
@@ -329,7 +313,6 @@ window.doLogin = function() {
     }
 
     session = { username: u, level: user.level, name: user.name, branch: user.branch };
-    // Save to sessionStorage so volunteer-firebase can read it too
     sessionStorage.setItem('meirPanimAuth', JSON.stringify({
         username:    u,
         hebrewName:  user.name,
@@ -356,15 +339,12 @@ window.doLogout = function() {
     document.getElementById('loginErr').textContent = '';
 };
 
-// ===== LOAD DATA =====
 async function loadData() {
     try {
         let snap;
         if (session.level >= 2) {
-            // admin-main and super-admin see ALL registrations
             snap = await getDocs(collection(db, 'registrations'));
         } else {
-            // branch manager sees only their branch
             snap = await getDocs(query(
                 collection(db, 'registrations'),
                 where('city', '==', session.branch)
@@ -380,13 +360,10 @@ async function loadData() {
     }
 }
 
-// ===== RENDER =====
 function renderAll() {
-    // For branch managers, filter display to their branch only
     const regs = session.level >= 2 ? allRegs :
         allRegs.filter(r => r.city === session.branch);
 
-    // Top stats
     const total     = regs.length;
     const delivered = regs.filter(r => r.packageReceived).length;
     const pending   = total - delivered;
@@ -400,15 +377,11 @@ function renderAll() {
     pb.style.width  = rate + '%';
     pb.textContent  = rate > 10 ? rate + '%' : '';
 
-    // Branch breakdown (only for level >= 2)
     if (session.level >= 2) {
         renderBranchStats(allRegs);
     }
 
-    // Package type breakdown
     renderPackageStats(regs);
-
-    // Registration list
     renderRegList(regs);
 }
 
@@ -473,7 +446,6 @@ function renderRegList(regs) {
         document.getElementById('regList').innerHTML = '<div class="loading">אין רישומים</div>';
         return;
     }
-    // Can delete if level >= 2 (admin-main and super-admin)
     const canDelete = session.level >= 2;
     document.getElementById('regList').innerHTML = sorted.map(r => `
         <div class="reg-item ${r.packageReceived ? 'delivered' : ''}">
@@ -496,7 +468,6 @@ function renderRegList(regs) {
         </div>`).join('');
 }
 
-// ===== SEARCH =====
 window.filterList = function() {
     const term = document.getElementById('searchBox').value.trim().toLowerCase();
     const regs = session.level >= 2 ? allRegs : allRegs.filter(r => r.city === session.branch);
@@ -508,7 +479,6 @@ window.filterList = function() {
     ));
 };
 
-// ===== DELETE =====
 window.deleteReg = async function(btn) {
     if (session.level < 2) { alert('אין הרשאה למחוק'); return; }
     const docId = btn.dataset.id;
@@ -520,7 +490,7 @@ window.deleteReg = async function(btn) {
         await deleteDoc(doc(db, 'registrations', docId));
         btn.closest('.reg-item').remove();
         allRegs = allRegs.filter(r => r.id !== docId);
-        renderAll(); // refresh stats
+        renderAll();
     } catch(e) {
         alert('שגיאה במחיקה: ' + e.message);
         btn.disabled = false;
@@ -528,7 +498,6 @@ window.deleteReg = async function(btn) {
     }
 };
 
-// ===== EXPORT =====
 window.exportExcel = function() {
     const regs = session.level >= 2 ? allRegs : allRegs.filter(r => r.city === session.branch);
     if (!regs.length) { alert('אין נתונים לייצוא'); return; }
@@ -563,7 +532,6 @@ td{padding:7px 12px;border:1px solid #ddd}tr:nth-child(even) td{background:#f9f9
     a.click();
 };
 
-// Auto-refresh every 30 seconds
 setInterval(loadData, 30000);
 </script>
 </body>
