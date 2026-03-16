@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מאיר פנים - יצירת ברקוד</title>
+    <meta name="theme-color" content="#8B1538">
+    <style>
+        :root {
+            --red: #8B1538;
+            --red-dark: #6b0f2a;
+            --red-light: #E4032E;
+            --green: #16a34a;
+            --gray: #6b7280;
+            --gray-light: #f3f4f6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: #f0f0f0;
+            min-height: 100vh;
+        }
+
+        /* ===== LOGIN ===== */
+        #loginScreen {
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(160deg, var(--red-dark), var(--red), var(--red-light));
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white; border-radius: 20px; padding: 36px 28px;
+            max-width: 360px; width: 100%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center;
+        }
+
+        .login-card .logo { font-size: 48px; margin-bottom: 6px; animation: beat 1.5s ease infinite; }
+        @keyframes beat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+        .login-card h2 { color: var(--red); font-size: 20px; margin-bottom: 2px; }
+        .login-card p  { color: var(--gray); font-size: 13px; margin-bottom: 22px; }
+
+        .inp { margin-bottom: 13px; text-align: right; }
+        .inp label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 4px; }
+        .inp input {
+            width: 100%; padding: 11px 13px;
+            border: 2px solid #e0e0e0; border-radius: 9px;
+            font-size: 15px; font-family: inherit;
+        }
+        .inp input:focus { outline: none; border-color: var(--red); }
+
+        .login-btn {
+            width: 100%; padding: 13px;
+            background: linear-gradient(135deg, var(--red-dark), var(--red-light));
+            color: white; border: none; border-radius: 9px;
+            font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer;
+        }
+
+        .login-err {
+            margin-top: 10px; padding: 9px; background: #fee2e2;
+            color: #991b1b; border-radius: 8px; font-size: 13px; display: none;
+        }
+
+        /* ===== MAIN APP ===== */
+        #mainApp { display: none; }
+
+        .topbar {
+            background: linear-gradient(135deg, var(--red-dark), var(--red));
+            color: white; padding: 12px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .topbar-left { display: flex; gap: 8px; align-items: center; }
+
+        .topbar-btn {
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35);
+            color: white; padding: 6px 13px; border-radius: 20px;
+            font-size: 12px; font-family: inherit; cursor: pointer;
+            text-decoration: none; display: inline-block;
+        }
+
+        .topbar-title { font-size: 16px; font-weight: 700; }
+        .topbar-sub   { font-size: 12px; opacity: 0.8; }
+
+        /* ===== CONTENT ===== */
+        .content { max-width: 600px; margin: 0 auto; padding: 20px 16px 60px; }
+
+        .form-card {
+            background: white; border-radius: 16px; padding: 22px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px;
+        }
+
+        .form-card h2 { color: var(--red); font-size: 16px; margin-bottom: 18px; font-weight: 700; }
+
+        .fgroup { margin-bottom: 15px; }
+        .fgroup label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 5px; }
+        .fgroup input, .fgroup select {
+            width: 100%; padding: 11px 13px;
+            border: 2px solid #e0e0e0; border-radius: 9px;
+            font-size: 15px; font-family: inherit; transition: border-color 0.2s;
+        }
+        .fgroup input:focus, .fgroup select:focus { outline: none; border-color: var(--red); }
+
+        .req { color: #e74c3c; }
+
+        .gen-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--red-dark), var(--red-light));
+            color: white; border: none; border-radius: 10px;
+            font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .gen-btn:hover { opacity: 0.9; }
+        .gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ===== RESULT ===== */
+        #resultSection { display: none; }
+
+        .result-card {
+            background: white; border-radius: 16px;
+            overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 16px;
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, var(--red-dark), var(--red));
+            color: white; padding: 16px 20px; text-align: center;
+        }
+
+        .result-header h3 { font-size: 18px; margin-bottom: 4px; }
+        .result-header .order-id {
+            font-family: 'Courier New', monospace;
+            font-size: 22px; font-weight: 800; letter-spacing: 2px;
+            background: rgba(255,255,255,0.2); padding: 6px 16px;
+            border-radius: 8px; display: inline-block; margin-top: 6px;
+        }
+
+        .result-body { padding: 20px; }
+
+        .info-row {
+            display: flex; justify-content: space-between;
+            padding: 8px 0; border-bottom: 1px dashed #f0f0f0;
+            font-size: 14px;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: var(--gray); }
+        .info-value { font-weight: 700; }
+
+        .qr-center { text-align: center; padding: 20px; background: #fafafa; }
+        .qr-wrap {
+            display: inline-block; background: white; border-radius: 14px;
+            padding: 14px; box-shadow: 0 4px 16px rgba(139,21,56,0.15);
+            border: 2px solid #f5e0e5;
+        }
+
+        /* ===== PRINT AREA ===== */
+        .print-area {
+            display: none;
+        }
+
+        /* ===== ACTION BUTTONS ===== */
+        .action-btns {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; padding: 16px;
+        }
+
+        .action-btn {
+            padding: 13px; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+
+        .btn-print  { background: var(--red); color: white; }
+        .btn-new    { background: var(--gray-light); color: #333; }
+        .btn-save   { background: #1d4ed8; color: white; }
+        .btn-firebase { background: var(--green); color: white; grid-column: span 2; }
+
+        /* ===== HISTORY ===== */
+        .history-card {
+            background: white; border-radius: 16px; padding: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .history-card h3 { color: var(--red); font-size: 15px; margin-bottom: 14px; }
+
+        .hist-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px;
+        }
+        .hist-item:last-child { border-bottom: none; }
+
+        .hist-name { font-weight: 700; color: #1a1a1a; }
+        .hist-meta { color: var(--gray); font-size: 12px; margin-top: 2px; }
+        .hist-order { font-family: monospace; color: var(--red); font-weight: 700; font-size: 12px; }
+
+        .hist-print {
+            background: var(--red); color: white; border: none;
+            padding: 5px 11px; border-radius: 6px; font-size: 12px;
+            font-family: inherit; cursor: pointer; white-space: nowrap;
+        }
+
+        .history-empty { text-align: center; color: var(--gray); padding: 20px; font-size: 14px; }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            body * { visibility: hidden; }
+            #printContent, #printContent * { visibility: visible; }
+            #printContent {
+                position: fixed; top: 0; left: 0; width: 100%;
+                display: block !important;
+                font-family: Arial, sans-serif;
+                direction: rtl;
+            }
+            .print-page {
+                width: 100%; padding: 30px;
+                text-align: center;
+            }
+            .print-logo { font-size: 40px; margin-bottom: 8px; }
+            .print-org  { font-size: 22px; font-weight: 800; color: #8B1538; margin-bottom: 4px; }
+            .print-sub  { font-size: 13px; color: #666; margin-bottom: 20px; }
+            .print-name { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+            .print-details { font-size: 14px; color: #555; margin-bottom: 16px; line-height: 1.8; }
+            .print-order {
+                font-size: 28px; font-weight: 800; color: #8B1538;
+                font-family: 'Courier New', monospace; letter-spacing: 3px;
+                border: 3px solid #8B1538; padding: 10px 20px;
+                display: inline-block; border-radius: 10px; margin-bottom: 20px;
+            }
+            .print-qr-area { margin: 0 auto 20px; }
+            .print-footer { font-size: 12px; color: #888; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hidden print area -->
+<div id="printContent" class="print-area">
+    <div class="print-page">
+        <div class="print-logo">❤️</div>
+        <div class="print-org">מאיר פנים</div>
+        <div class="print-sub">מרכזים לרווחה משלימה</div>
+        <div class="print-name" id="printName"></div>
+        <div class="print-details" id="printDetails"></div>
+        <div class="print-order" id="printOrder"></div>
+        <div class="print-qr-area">
+            <canvas id="printCanvas" width="200" height="200"></canvas>
+        </div>
+        <div class="print-footer">הצג קוד QR זה למנהל החלוקה בעת הגעתך | מאיר פנים ❤️</div>
+    </div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="logo">❤️</div>
+        <h2>מאיר פנים</h2>
+        <p>יצירת ברקוד ללא SMS</p>
+        <div class="inp">
+            <label>שם משתמש</label>
+            <input type="text" id="loginUser" placeholder="admin-main" autocomplete="username">
+        </div>
+        <div class="inp">
+            <label>סיסמה</label>
+            <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="login-btn" onclick="doLogin()">כניסה</button>
+        <div class="login-err" id="loginErr"></div>
+    </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp">
+
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="home.html" class="topbar-btn">🏠 דף הבית</a>
+            <a href="admin-firebase.html" class="topbar-btn">📊 לוח בקרה</a>
+            <button class="topbar-btn" onclick="doLogout()">יציאה</button>
+        </div>
+        <div style="text-align:right;">
+            <div class="topbar-title">🏷️ יצירת ברקוד</div>
+            <div class="topbar-sub" id="topUser"></div>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- Form -->
+        <div class="form-card" id="formSection">
+            <h2>🏷️ יצירת ברקוד ללא SMS</h2>
+
+            <div class="fgroup">
+                <label>שם מלא <span class="req">*</span></label>
+                <input type="text" id="fName" placeholder="שם מלא הלקוח">
+            </div>
+            <div class="fgroup">
+                <label>סניף <span class="req">*</span></label>
+                <select id="fCity">
+                    <option value="">בחר סניף</option>
+                    <option value="ירושלים">ירושלים</option>
+                    <option value="צפת">צפת</option>
+                    <option value="דימונה">דימונה</option>
+                    <option value="אור עקיבא">אור עקיבא</option>
+                    <option value="טבריה">טבריה</option>
+                </select>
+            </div>
+            <div class="fgroup">
+                <label>סוג חבילה <span class="req">*</span></label>
+                <select id="fPackage">
+                    <option value="">בחר סוג חבילה</option>
+                    <option value="חבילת מזון">חבילת מזון</option>
+                    <option value="תלוש/שובר">תלוש/שובר</option>
+                    <option value="חבילה + שובר">חבילה + שובר</option>
+                </select>
+            </div>
+            <div class="fgroup">
+                <label>הערות</label>
+                <input type="text" id="fNotes" placeholder="צרכים מיוחדים, אלרגיות...">
+            </div>
+
+            <button class="gen-btn" onclick="generateBarcode()">🏷️ צור ברקוד</button>
+        </div>
+
+        <!-- Result -->
+        <div id="resultSection">
+            <div class="result-card">
+                <div class="result-header">
+                    <h3>✅ ברקוד נוצר בהצלחה!</h3>
+                    <div class="order-id" id="resultOrderId"></div>
+                </div>
+
+                <div class="result-body">
+                    <div class="info-row">
+                        <span class="info-label">שם:</span>
+                        <span class="info-value" id="resultName"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">סניף:</span>
+                        <span class="info-value" id="resultCity"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">סוג חבילה:</span>
+                        <span class="info-value" id="resultPackage"></span>
+                    </div>
+                    <div class="info-row" id="resultNotesRow" style="display:none;">
+                        <span class="info-label">הערות:</span>
+                        <span class="info-value" id="resultNotes"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">תאריך יצירה:</span>
+                        <span class="info-value" id="resultDate"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">נוצר ע"י:</span>
+                        <span class="info-value" id="resultBy"></span>
+                    </div>
+                </div>
+
+                <div class="qr-center">
+                    <div class="qr-wrap">
+                        <canvas id="qrCanvas" width="220" height="220"></canvas>
+                    </div>
+                </div>
+
+                <div class="action-btns">
+                    <button class="action-btn btn-print" onclick="printBarcode()">🖨️ הדפס</button>
+                    <button class="action-btn btn-new" onclick="resetForm()">+ חדש</button>
+                    <button class="action-btn btn-firebase" onclick="saveToFirebase()">
+                        ☁️ שמור במערכת (ללא SMS)
+                    </button>
+                </div>
+
+                <div id="saveStatus" style="padding:0 16px 16px;font-size:13px;text-align:center;display:none;"></div>
+            </div>
+
+            <!-- History -->
+            <div class="history-card">
+                <h3>📋 ברקודים שנוצרו בסשן זה</h3>
+                <div id="historyList"><div class="history-empty">אין עדיין</div></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, collection, addDoc, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAmaAzUatTV97LwL4VoVEUrJoVpnF612ig",
+    authDomain: "meir-panim-f27c4.firebaseapp.com",
+    projectId: "meir-panim-f27c4",
+    storageBucket: "meir-panim-f27c4.firebasestorage.app",
+    messagingSenderId: "252083260218",
+    appId: "1:252083260218:web:ea5e1e072aed819b8d1e03"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ===== AUTH =====
+const USERS = {
+    'super-admin': { level:3, name:'מנהל על', branch:null },
+    'admin-main':  { level:2, name:'אדמין ראשי', branch:null },
+    'manager-jerusalem': { level:1, name:'מנהל סניף ירושלים', branch:'ירושלים' },
+    'manager-tzfat':     { level:1, name:'מנהל סניף צפת',     branch:'צפת' },
+    'manager-dimona':    { level:1, name:'מנהל סניף דימונה',  branch:'דימונה' },
+    'manager-orakiva':   { level:1, name:'מנהל סניף אור עקיבא', branch:'אור עקיבא' },
+    'manager-tiberias':  { level:1, name:'מנהל סניף טבריה',   branch:'טבריה' }
+};
+const PASS = 'MeirPanim2025';
+
+let session = null;
+let sessionHistory = [];
+let currentEntry = null;
+
+window.doLogin = function() {
+    const u = document.getElementById('loginUser').value.trim().toLowerCase();
+    const p = document.getElementById('loginPass').value;
+    const errEl = document.getElementById('loginErr');
+    errEl.style.display = 'none';
+
+    if (!USERS[u] || p !== PASS) {
+        errEl.textContent = 'שם משתמש או סיסמה שגויים';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    session = { username: u, ...USERS[u] };
+
+    // אם מנהל סניף - קבע את הסניף שלו אוטומטית
+    if (session.branch) {
+        document.getElementById('fCity').value = session.branch;
+        document.getElementById('fCity').disabled = true;
+    }
+
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('topUser').textContent = session.name;
+};
+
+document.getElementById('loginPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.doLogin();
+});
+
+window.doLogout = function() {
+    session = null;
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+};
+
+// ===== GENERATE =====
+window.generateBarcode = function() {
+    const name    = document.getElementById('fName').value.trim();
+    const city    = document.getElementById('fCity').value;
+    const pkg     = document.getElementById('fPackage').value;
+    const notes   = document.getElementById('fNotes').value.trim();
+
+    if (!name || !city || !pkg) {
+        alert('נא למלא שם, סניף וסוג חבילה');
+        return;
+    }
+
+    const orderId = 'MP' + Date.now().toString().slice(-8);
+    const now = new Date().toLocaleDateString('he-IL');
+
+    currentEntry = { orderId, name, city, pkg, notes, date: now, by: session.name };
+
+    // Fill result
+    document.getElementById('resultOrderId').textContent = orderId;
+    document.getElementById('resultName').textContent    = name;
+    document.getElementById('resultCity').textContent    = city;
+    document.getElementById('resultPackage').textContent = pkg;
+    document.getElementById('resultDate').textContent    = now;
+    document.getElementById('resultBy').textContent      = session.name;
+
+    if (notes) {
+        document.getElementById('resultNotes').textContent = notes;
+        document.getElementById('resultNotesRow').style.display = 'flex';
+    } else {
+        document.getElementById('resultNotesRow').style.display = 'none';
+    }
+
+    // Draw QR
+    QRGen.draw('qrCanvas', orderId, { dark: '#8B1538', light: '#FFFFFF', size: 220 });
+    QRGen.draw('printCanvas', orderId, { dark: '#8B1538', light: '#FFFFFF', size: 200 });
+
+    // Fill print area
+    document.getElementById('printName').textContent = name;
+    document.getElementById('printDetails').innerHTML =
+        `סניף: ${city} | סוג: ${pkg}${notes ? '<br>הערות: ' + notes : ''}<br>תאריך: ${now}`;
+    document.getElementById('printOrder').textContent = orderId;
+
+    // Reset save status
+    document.getElementById('saveStatus').style.display = 'none';
+
+    // Show result
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('resultSection').style.display = 'block';
+    document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+};
+
+// ===== PRINT =====
+window.printBarcode = function() {
+    window.print();
+};
+
+// ===== SAVE TO FIREBASE =====
+window.saveToFirebase = async function() {
+    if (!currentEntry) return;
+    const btn = document.querySelector('.btn-firebase');
+    const statusEl = document.getElementById('saveStatus');
+    btn.disabled = true;
+    btn.textContent = '⏳ שומר...';
+
+    try {
+        await addDoc(collection(db, 'registrations'), {
+            fullName:           currentEntry.name,
+            idNumber:           '',
+            phone:              '',
+            city:               currentEntry.city,
+            packageType:        currentEntry.pkg,
+            notes:              currentEntry.notes,
+            registrationDate:   serverTimestamp(),
+            registrationNumber: currentEntry.orderId,
+            registeredBy:       session.username,
+            packageReceived:    false,
+            receivedDate:       null,
+            noPhone:            true
+        });
+
+        btn.textContent = '✅ נשמר במערכת!';
+        btn.style.background = '#16a34a';
+        statusEl.style.display = 'block';
+        statusEl.style.color = '#16a34a';
+        statusEl.textContent = `✅ ${currentEntry.orderId} נשמר בהצלחה ב-Firebase`;
+
+        // Add to session history
+        sessionHistory.unshift({ ...currentEntry });
+        renderHistory();
+
+    } catch(e) {
+        btn.disabled = false;
+        btn.textContent = '☁️ שמור במערכת (ללא SMS)';
+        statusEl.style.display = 'block';
+        statusEl.style.color = '#dc2626';
+        statusEl.textContent = '❌ שגיאה בשמירה: ' + e.message;
+    }
+};
+
+// ===== RESET =====
+window.resetForm = function() {
+    document.getElementById('fName').value = '';
+    if (!session.branch) document.getElementById('fCity').value = '';
+    document.getElementById('fPackage').value = '';
+    document.getElementById('fNotes').value = '';
+    document.getElementById('resultSection').style.display = 'none';
+    document.getElementById('formSection').style.display = 'block';
+    currentEntry = null;
+};
+
+// ===== HISTORY =====
+function renderHistory() {
+    const el = document.getElementById('historyList');
+    if (!sessionHistory.length) {
+        el.innerHTML = '<div class="history-empty">אין עדיין</div>';
+        return;
+    }
+    el.innerHTML = sessionHistory.map((h, i) => `
+        <div class="hist-item">
+            <div>
+                <div class="hist-name">${h.name}</div>
+                <div class="hist-meta">${h.city} | ${h.pkg} | ${h.date}</div>
+                <div class="hist-order">${h.orderId}</div>
+            </div>
+            <button class="hist-print" onclick="reprintEntry(${i})">🖨️ הדפס</button>
+        </div>
+    `).join('');
+}
+
+window.reprintEntry = function(i) {
+    const h = sessionHistory[i];
+    document.getElementById('printName').textContent = h.name;
+    document.getElementById('printDetails').innerHTML =
+        `סניף: ${h.city} | סוג: ${h.pkg}${h.notes ? '<br>הערות: ' + h.notes : ''}<br>תאריך: ${h.date}`;
+    document.getElementById('printOrder').textContent = h.orderId;
+    QRGen.draw('printCanvas', h.orderId, { dark: '#8B1538', light: '#FFFFFF', size: 200 });
+    setTimeout(() => window.print(), 100);
+};
+
+</script>
+
+<script>
+// ===== QR Generator =====
+var QRGen=(function(){
+var ALPHANUM='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+function pb(arr,val,len){for(var i=len-1;i>=0;i--)arr.push((val>>i)&1);}
+function alphaEnc(s){
+    s=s.toUpperCase();var bits=[];
+    for(var i=0;i<s.length-1;i+=2){pb(bits,ALPHANUM.indexOf(s[i])*45+ALPHANUM.indexOf(s[i+1]),11);}
+    if(s.length%2===1)pb(bits,ALPHANUM.indexOf(s[s.length-1]),6);
+    return bits;
+}
+var EX=new Array(512),LG=new Array(256);
+(function(){var x=1;for(var i=0;i<255;i++){EX[i]=x;LG[x]=i;x<<=1;if(x&256)x^=285;}for(var i=255;i<512;i++)EX[i]=EX[i-255];})();
+function gm(a,b){return a&&b?EX[LG[a]+LG[b]]:0;}
+function rsGen(n){var g=[1];for(var i=0;i<n;i++){var ng=new Array(g.length+1).fill(0);for(var j=0;j<g.length;j++){ng[j]^=g[j];ng[j+1]^=gm(g[j],EX[i]);}g=ng;}return g;}
+function rsEnc(data,ec){
+    var gen=rsGen(ec),msg=data.slice();
+    for(var i=0;i<ec;i++)msg.push(0);
+    for(var i=0;i<data.length;i++){var c=msg[i];if(c)for(var j=1;j<gen.length;j++)msg[i+j]^=gm(gen[j],c);}
+    return msg.slice(data.length);
+}
+function b2B(bits){while(bits.length%8!==0)bits.push(0);var B=[];for(var i=0;i<bits.length;i+=8){var b=0;for(var j=0;j<8;j++)b=(b<<1)|bits[i+j];B.push(b);}return B;}
+function buildMatrix(text){
+    var N=25,M=[];
+    for(var i=0;i<N;i++)M.push(new Array(N).fill(-1));
+    function finder(r,c){for(var i=0;i<7;i++)for(var j=0;j<7;j++)M[r+i][c+j]=(i===0||i===6||j===0||j===6||(i>=2&&i<=4&&j>=2&&j<=4))?1:0;}
+    finder(0,0);finder(0,18);finder(18,0);
+    for(var i=0;i<8;i++){M[7][i]=0;M[7][N-1-i]=0;M[N-8][i]=0;M[i][7]=0;M[N-1-i][7]=0;M[i][N-8]=0;}
+    M[7][7]=0;M[7][N-8]=0;M[N-8][7]=0;
+    for(var i=8;i<N-8;i++){M[6][i]=i%2===0?1:0;M[i][6]=i%2===0?1:0;}
+    M[N-8][8]=1;
+    function align(r,c){for(var i=-2;i<=2;i++)for(var j=-2;j<=2;j++)M[r+i][c+j]=(Math.abs(i)===2||Math.abs(j)===2)?1:(i===0&&j===0?1:0);}
+    align(18,18);
+    for(var i=0;i<9;i++){if(M[8][i]===-1)M[8][i]=0;if(M[i][8]===-1)M[i][8]=0;}
+    for(var i=0;i<8;i++){if(M[8][N-1-i]===-1)M[8][N-1-i]=0;if(M[N-1-i][8]===-1)M[N-1-i][8]=0;}
+    var bits=[0,0,1,0];
+    pb(bits,text.length,9);
+    bits=bits.concat(alphaEnc(text));
+    for(var i=0;i<4&&bits.length<224;i++)bits.push(0);
+    while(bits.length%8!==0)bits.push(0);
+    var pad=[0xEC,0x11],pi=0;
+    while(bits.length<224){pb(bits,pad[pi%2],8);pi++;}
+    var dB=b2B(bits),eB=rsEnc(dB,16),aB=dB.concat(eB),aBI=[];
+    for(var i=0;i<aB.length;i++)pb(aBI,aB[i],8);
+    var bi=0,dir=-1;
+    for(var col=N-1;col>=0;col-=2){
+        if(col===6)col=5;
+        for(var rs=0;rs<N;rs++){
+            var r=dir===-1?(N-1-rs):rs;
+            for(var ci=0;ci<2;ci++){
+                var c=col-ci;
+                if(M[r][c]===-1){var bit=bi<aBI.length?aBI[bi++]:0;M[r][c]=((r+c)%2===0)?(bit^1):bit;}
+            }
+        }
+        dir=-dir;
+    }
+    var fmt=[1,0,1,0,1,0,0,0,0,0,1,0,0,1,0];
+    var fp1=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+    var fp2=[[N-1,8],[N-2,8],[N-3,8],[N-4,8],[N-5,8],[N-6,8],[N-7,8],[8,N-8],[8,N-7],[8,N-6],[8,N-5],[8,N-4],[8,N-3],[8,N-2],[8,N-1]];
+    for(var i=0;i<15;i++){M[fp1[i][0]][fp1[i][1]]=fmt[i];M[fp2[i][0]][fp2[i][1]]=fmt[i];}
+    return M;
+}
+return{
+    draw:function(canvasId,text,opts){
+        opts=opts||{};
+        var dark=opts.dark||'#000',light=opts.light||'#fff',size=opts.size||220;
+        var M=buildMatrix(text.toUpperCase()),N=M.length;
+        var cv=document.getElementById(canvasId);
+        cv.width=size;cv.height=size;
+        var ctx=cv.getContext('2d');
+        var cell=size/(N+8),off=cell*4;
+        ctx.fillStyle=light;ctx.fillRect(0,0,size,size);
+        ctx.fillStyle=dark;
+        for(var r=0;r<N;r++)for(var c=0;c<N;c++)
+            if(M[r][c]===1)ctx.fillRect(Math.floor(off+c*cell),Math.floor(off+r*cell),Math.ceil(cell),Math.ceil(cell));
+    }
+};
+})();
+</script>
+</body>
+</html>
