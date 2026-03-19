@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מאיר פנים - שידור SMS</title>
+    <meta name="theme-color" content="#8B1538">
+    <style>
+        :root {
+            --red:#8B1538; --red-dark:#6b0f2a; --red-light:#E4032E;
+            --green:#16a34a; --orange:#ea580c;
+            --gray:#6b7280; --gray-light:#f3f4f6;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Segoe UI',Tahoma,Arial,sans-serif; background:#f0f0f0; min-height:100vh; }
+
+        /* LOGIN */
+        #loginScreen {
+            min-height:100vh; display:flex; align-items:center; justify-content:center;
+            background:linear-gradient(160deg,var(--red-dark),var(--red),var(--red-light)); padding:20px;
+        }
+        .login-card {
+            background:white; border-radius:20px; padding:36px 28px;
+            max-width:360px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.3); text-align:center;
+        }
+        .login-card .logo { font-size:48px; margin-bottom:6px; animation:beat 1.5s ease infinite; }
+        @keyframes beat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        .login-card h2 { color:var(--red); font-size:20px; margin-bottom:2px; }
+        .login-card p  { color:var(--gray); font-size:13px; margin-bottom:22px; }
+        .inp { margin-bottom:13px; text-align:right; }
+        .inp label { display:block; font-size:13px; font-weight:600; color:#444; margin-bottom:4px; }
+        .inp input { width:100%; padding:11px 13px; border:2px solid #e0e0e0; border-radius:9px; font-size:15px; font-family:inherit; }
+        .inp input:focus { outline:none; border-color:var(--red); }
+        .login-btn { width:100%; padding:13px; background:linear-gradient(135deg,var(--red-dark),var(--red-light)); color:white; border:none; border-radius:9px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; }
+        .login-err { margin-top:10px; padding:9px; background:#fee2e2; color:#991b1b; border-radius:8px; font-size:13px; display:none; }
+
+        /* MAIN */
+        #mainApp { display:none; }
+        .topbar {
+            background:linear-gradient(135deg,var(--red-dark),var(--red));
+            color:white; padding:12px 16px;
+            display:flex; align-items:center; justify-content:space-between;
+            box-shadow:0 2px 10px rgba(0,0,0,0.2); position:sticky; top:0; z-index:100;
+        }
+        .topbar-left { display:flex; gap:8px; align-items:center; }
+        .topbar-btn { background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.35); color:white; padding:6px 13px; border-radius:20px; font-size:12px; font-family:inherit; cursor:pointer; text-decoration:none; display:inline-block; }
+        .topbar-title { font-size:16px; font-weight:700; }
+        .topbar-sub   { font-size:12px; opacity:0.8; }
+
+        .content { max-width:600px; margin:0 auto; padding:20px 16px 60px; }
+
+        .card { background:white; border-radius:16px; padding:22px; box-shadow:0 2px 12px rgba(0,0,0,0.08); margin-bottom:16px; }
+        .card h2 { color:var(--red); font-size:16px; margin-bottom:16px; font-weight:700; }
+
+        .fgroup { margin-bottom:16px; }
+        .fgroup label { display:block; font-size:13px; font-weight:600; color:#444; margin-bottom:5px; }
+        .fgroup select, .fgroup textarea {
+            width:100%; padding:11px 13px; border:2px solid #e0e0e0;
+            border-radius:9px; font-size:15px; font-family:inherit; transition:border-color 0.2s;
+        }
+        .fgroup select:focus, .fgroup textarea:focus { outline:none; border-color:var(--red); }
+        .fgroup textarea { resize:vertical; min-height:130px; line-height:1.6; }
+
+        .char-count { font-size:12px; color:var(--gray); margin-top:4px; text-align:left; }
+        .char-count.warn { color:var(--orange); }
+        .char-count.over { color:#dc2626; font-weight:700; }
+
+        /* Preview box */
+        .preview-box {
+            background:#f0f9ff; border:2px solid #bae6fd; border-radius:12px;
+            padding:16px; margin-bottom:16px; font-size:14px; line-height:1.7;
+            color:#0c4a6e; white-space:pre-wrap; direction:rtl; text-align:right;
+            min-height:60px;
+        }
+        .preview-label { font-size:12px; color:var(--gray); font-weight:600; margin-bottom:6px; }
+
+        /* Recipients info */
+        .recipients-info {
+            background:#f8f9fa; border-radius:10px; padding:14px;
+            display:flex; align-items:center; gap:12px; margin-bottom:16px;
+        }
+        .rec-icon { font-size:32px; }
+        .rec-count { font-size:28px; font-weight:800; color:var(--red); }
+        .rec-lbl   { font-size:13px; color:var(--gray); }
+
+        /* Stats */
+        .stats-bar { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+        .stat-box { background:white; border-radius:12px; padding:14px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+        .stat-num { font-size:26px; font-weight:800; color:var(--red); }
+        .stat-num.green  { color:var(--green); }
+        .stat-num.orange { color:var(--orange); }
+        .stat-lbl { font-size:11px; color:var(--gray); margin-top:2px; }
+
+        .progress-wrap { background:#e0e0e0; border-radius:10px; height:22px; overflow:hidden; margin:10px 0; }
+        .progress-bar  { height:100%; background:linear-gradient(90deg,var(--green),#20c997); transition:width 0.3s; display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:700; }
+
+        .btn { padding:14px 20px; border:none; border-radius:10px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:7px; transition:opacity 0.2s; width:100%; }
+        .btn:hover { opacity:0.9; }
+        .btn:disabled { opacity:0.4; cursor:not-allowed; }
+        .btn-primary { background:linear-gradient(135deg,var(--red-dark),var(--red-light)); color:white; }
+        .btn-load    { background:var(--gray-light); color:#333; margin-bottom:10px; }
+
+        .log-box { background:#1a1a1a; border-radius:10px; padding:14px; font-family:'Courier New',monospace; font-size:12px; max-height:200px; overflow-y:auto; margin-top:12px; display:none; }
+        .log-line { margin-bottom:4px; }
+        .log-ok  { color:#4ade80; }
+        .log-err { color:#f87171; }
+        .log-inf { color:#60a5fa; }
+
+        .warning-box { background:#fff3cd; border:1px solid #ffc107; border-radius:10px; padding:12px 16px; font-size:13px; color:#856404; margin-bottom:16px; }
+    </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="logo">❤️</div>
+        <h2>מאיר פנים</h2>
+        <p>שידור SMS לסניף</p>
+        <div class="inp"><label>שם משתמש</label><input type="text" id="loginUser" placeholder="admin-main" autocomplete="username"></div>
+        <div class="inp"><label>סיסמה</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"></div>
+        <button class="login-btn" onclick="doLogin()">כניסה</button>
+        <div class="login-err" id="loginErr"></div>
+    </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp">
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="home.html" class="topbar-btn">🏠 דף הבית</a>
+            <a href="admin-firebase.html" class="topbar-btn">📊 לוח בקרה</a>
+            <button class="topbar-btn" onclick="doLogout()">יציאה</button>
+        </div>
+        <div style="text-align:right;">
+            <div class="topbar-title">📣 שידור SMS</div>
+            <div class="topbar-sub" id="topUser"></div>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- Step 1: Choose branch & message -->
+        <div class="card" id="step1">
+            <h2>📣 שליחת הודעת שידור לסניף</h2>
+
+            <div class="fgroup">
+                <label>בחר סניף</label>
+                <select id="fCity" onchange="resetRecipients()">
+                    <option value="">-- בחר סניף --</option>
+                    <option value="ירושלים">ירושלים</option>
+                    <option value="צפת">צפת</option>
+                    <option value="דימונה">דימונה</option>
+                    <option value="אור עקיבא">אור עקיבא</option>
+                    <option value="טבריה">טבריה</option>
+                </select>
+            </div>
+
+            <button class="btn btn-load" onclick="loadRecipients()">🔍 טען נמענים</button>
+
+            <!-- Recipients count -->
+            <div class="recipients-info" id="recipientsInfo" style="display:none;">
+                <div class="rec-icon">👥</div>
+                <div>
+                    <div class="rec-count" id="recCount">0</div>
+                    <div class="rec-lbl">לקוחות יקבלו את ההודעה</div>
+                </div>
+            </div>
+
+            <div class="fgroup">
+                <label>תוכן ההודעה</label>
+                <textarea id="msgText" placeholder="כתוב כאן את ההודעה שתישלח לכל הלקוחות בסניף...&#10;&#10;לדוגמה:&#10;שלום! חלוקת החבילות תתקיים ביום שישי 21/3 בשעה 10:00 ברחוב הרצל 5. מאיר פנים ❤️" oninput="updatePreview()"></textarea>
+                <div class="char-count" id="charCount">0 תווים</div>
+            </div>
+
+            <!-- Preview -->
+            <div id="previewSection" style="display:none;">
+                <div class="preview-label">👁️ תצוגה מקדימה של ההודעה:</div>
+                <div class="preview-box" id="previewBox"></div>
+            </div>
+
+            <div class="warning-box" id="warningBox" style="display:none;">
+                ⚠️ שים לב: הודעה זו תישלח ל-<strong id="warnCount">0</strong> לקוחות ולא ניתן לבטל לאחר השליחה.
+            </div>
+
+            <button class="btn btn-primary" id="sendBtn" onclick="startBroadcast()" style="display:none;">
+                📣 שלח לכולם
+            </button>
+        </div>
+
+        <!-- Step 2: Progress -->
+        <div class="card" id="step2" style="display:none;">
+            <h2>⏳ שולח הודעות...</h2>
+
+            <div class="stats-bar">
+                <div class="stat-box"><div class="stat-num green" id="sDone">0</div><div class="stat-lbl">נשלחו ✅</div></div>
+                <div class="stat-box"><div class="stat-num orange" id="sFail">0</div><div class="stat-lbl">שגיאה ❌</div></div>
+                <div class="stat-box"><div class="stat-num" id="sLeft">0</div><div class="stat-lbl">נותרו</div></div>
+            </div>
+
+            <div class="progress-wrap">
+                <div class="progress-bar" id="progressBar" style="width:0%">0%</div>
+            </div>
+
+            <div class="log-box" id="logBox"></div>
+        </div>
+
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, collection, query, where, getDocs }
+    from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const WORKER_URL = 'https://meir-panim-sms.sssnoy81.workers.dev/send';
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAmaAzUatTV97LwL4VoVEUrJoVpnF612ig",
+    authDomain: "meir-panim-f27c4.firebaseapp.com",
+    projectId: "meir-panim-f27c4",
+    storageBucket: "meir-panim-f27c4.firebasestorage.app",
+    messagingSenderId: "252083260218",
+    appId: "1:252083260218:web:ea5e1e072aed819b8d1e03"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+const USERS = {
+    'super-admin':       { level:3, name:'מנהל על',            branch:null },
+    'admin-main':        { level:2, name:'אדמין ראשי',          branch:null },
+    'manager-jerusalem': { level:1, name:'מנהל סניף ירושלים',   branch:'ירושלים' },
+    'manager-tzfat':     { level:1, name:'מנהל סניף צפת',       branch:'צפת' },
+    'manager-dimona':    { level:1, name:'מנהל סניף דימונה',    branch:'דימונה' },
+    'manager-orakiva':   { level:1, name:'מנהל סניף אור עקיבא', branch:'אור עקיבא' },
+    'manager-tiberias':  { level:1, name:'מנהל סניף טבריה',     branch:'טבריה' }
+};
+const PASS = 'MeirPanim2025';
+
+let session = null;
+let recipients = [];
+let sending = false;
+
+// ===== LOGIN =====
+window.doLogin = function() {
+    const u = document.getElementById('loginUser').value.trim().toLowerCase();
+    const p = document.getElementById('loginPass').value;
+    const errEl = document.getElementById('loginErr');
+    errEl.style.display = 'none';
+    if (!USERS[u] || p !== PASS) { errEl.textContent='שם משתמש או סיסמה שגויים'; errEl.style.display='block'; return; }
+    session = { username:u, ...USERS[u] };
+    // מנהל סניף - נעל את הסניף שלו
+    if (session.branch) {
+        document.getElementById('fCity').value = session.branch;
+        document.getElementById('fCity').disabled = true;
+    }
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('topUser').textContent = session.name;
+};
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') window.doLogin(); });
+window.doLogout = function() {
+    session = null;
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+};
+
+// ===== LOAD RECIPIENTS =====
+window.loadRecipients = async function() {
+    const city = document.getElementById('fCity').value;
+    if (!city) { alert('נא לבחור סניף תחילה'); return; }
+
+    const btn = document.querySelector('.btn-load');
+    btn.textContent = '⏳ טוען...';
+    btn.disabled = true;
+
+    try {
+        const snap = await getDocs(query(
+            collection(db, 'registrations'),
+            where('city', '==', city)
+        ));
+
+        recipients = [];
+        snap.forEach(d => {
+            const data = d.data();
+            if (data.phone) recipients.push({ name: data.fullName || '', phone: data.phone });
+        });
+
+        document.getElementById('recCount').textContent = recipients.length;
+        document.getElementById('recipientsInfo').style.display = 'flex';
+        document.getElementById('warnCount').textContent = recipients.length;
+        document.getElementById('warningBox').style.display = recipients.length > 0 ? 'block' : 'none';
+        document.getElementById('sendBtn').style.display = recipients.length > 0 ? 'flex' : 'none';
+
+        btn.textContent = `✅ נטענו ${recipients.length} נמענים`;
+        btn.style.background = '#dcfce7';
+        btn.style.color = '#16a34a';
+
+    } catch(e) {
+        alert('שגיאה בטעינה: ' + e.message);
+        btn.disabled = false;
+        btn.textContent = '🔍 טען נמענים';
+    }
+};
+
+window.resetRecipients = function() {
+    recipients = [];
+    document.getElementById('recipientsInfo').style.display = 'none';
+    document.getElementById('warningBox').style.display = 'none';
+    document.getElementById('sendBtn').style.display = 'none';
+    const btn = document.querySelector('.btn-load');
+    btn.disabled = false;
+    btn.textContent = '🔍 טען נמענים';
+    btn.style.background = '';
+    btn.style.color = '';
+};
+
+// ===== PREVIEW =====
+window.updatePreview = function() {
+    const text = document.getElementById('msgText').value;
+    const len = text.length;
+    const countEl = document.getElementById('charCount');
+    countEl.textContent = len + ' תווים';
+    countEl.className = 'char-count' + (len > 160 ? ' warn' : '') + (len > 320 ? ' over' : '');
+
+    if (text.trim()) {
+        document.getElementById('previewBox').textContent = text;
+        document.getElementById('previewSection').style.display = 'block';
+    } else {
+        document.getElementById('previewSection').style.display = 'none';
+    }
+};
+
+// ===== BROADCAST =====
+window.startBroadcast = async function() {
+    if (sending) return;
+    const msg = document.getElementById('msgText').value.trim();
+    if (!msg) { alert('נא לכתוב הודעה תחילה'); return; }
+    if (!recipients.length) { alert('אין נמענים'); return; }
+    if (!confirm(`לשלוח הודעה ל-${recipients.length} לקוחות?\n\nההודעה:\n"${msg.substring(0,100)}${msg.length>100?'...':''}"`)) return;
+
+    sending = true;
+    document.getElementById('sendBtn').disabled = true;
+    document.getElementById('step2').style.display = 'block';
+    document.getElementById('step2').scrollIntoView({ behavior:'smooth' });
+    document.getElementById('logBox').style.display = 'block';
+
+    let done = 0, fail = 0;
+    document.getElementById('sLeft').textContent = recipients.length;
+
+    for (const r of recipients) {
+        try {
+            // שולח דרך ה-worker עם הודעה חופשית
+            const res = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phone:     r.phone,
+                    broadcast: true,       // דגל שזה broadcast
+                    customMsg: msg         // הודעה חופשית
+                })
+            });
+            const result = await res.json();
+            if (!result.ok) throw new Error(result.error || 'failed');
+
+            done++;
+            log(`✅ ${r.name} (${r.phone})`, 'ok');
+
+        } catch(e) {
+            fail++;
+            log(`❌ ${r.name} - ${e.message}`, 'err');
+        }
+
+        document.getElementById('sDone').textContent = done;
+        document.getElementById('sFail').textContent = fail;
+        document.getElementById('sLeft').textContent = recipients.length - done - fail;
+
+        const pct = Math.round(((done+fail)/recipients.length)*100);
+        document.getElementById('progressBar').style.width = pct+'%';
+        document.getElementById('progressBar').textContent = pct+'%';
+
+        await sleep(600);
+    }
+
+    sending = false;
+    document.getElementById('step2').querySelector('h2').textContent = '✅ השידור הסתיים!';
+    log(`\n🏁 סיום! נשלחו: ${done} | שגיאות: ${fail}`, 'inf');
+};
+
+function log(msg, type='inf') {
+    const box = document.getElementById('logBox');
+    const line = document.createElement('div');
+    line.className='log-line log-'+type;
+    line.textContent=msg;
+    box.appendChild(line);
+    box.scrollTop=box.scrollHeight;
+}
+
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+</script>
+</body>
+</html>
