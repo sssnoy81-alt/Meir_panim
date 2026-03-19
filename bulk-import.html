@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מאיר פנים - ייבוא המוני</title>
+    <meta name="theme-color" content="#8B1538">
+    <style>
+        :root {
+            --red:#8B1538; --red-dark:#6b0f2a; --red-light:#E4032E;
+            --green:#16a34a; --green-bg:#dcfce7;
+            --orange:#ea580c; --gray:#6b7280; --gray-light:#f3f4f6;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Segoe UI',Tahoma,Arial,sans-serif; background:#f0f0f0; min-height:100vh; }
+
+        #loginScreen {
+            min-height:100vh; display:flex; align-items:center; justify-content:center;
+            background:linear-gradient(160deg,var(--red-dark),var(--red),var(--red-light)); padding:20px;
+        }
+        .login-card {
+            background:white; border-radius:20px; padding:36px 28px;
+            max-width:360px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.3); text-align:center;
+        }
+        .login-card .logo { font-size:48px; margin-bottom:6px; animation:beat 1.5s ease infinite; }
+        @keyframes beat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        .login-card h2 { color:var(--red); font-size:20px; margin-bottom:2px; }
+        .login-card p  { color:var(--gray); font-size:13px; margin-bottom:22px; }
+        .inp { margin-bottom:13px; text-align:right; }
+        .inp label { display:block; font-size:13px; font-weight:600; color:#444; margin-bottom:4px; }
+        .inp input { width:100%; padding:11px 13px; border:2px solid #e0e0e0; border-radius:9px; font-size:15px; font-family:inherit; }
+        .inp input:focus { outline:none; border-color:var(--red); }
+        .login-btn { width:100%; padding:13px; background:linear-gradient(135deg,var(--red-dark),var(--red-light)); color:white; border:none; border-radius:9px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; }
+        .login-err { margin-top:10px; padding:9px; background:#fee2e2; color:#991b1b; border-radius:8px; font-size:13px; display:none; }
+
+        #mainApp { display:none; }
+        .topbar {
+            background:linear-gradient(135deg,var(--red-dark),var(--red));
+            color:white; padding:12px 16px;
+            display:flex; align-items:center; justify-content:space-between;
+            box-shadow:0 2px 10px rgba(0,0,0,0.2); position:sticky; top:0; z-index:100;
+        }
+        .topbar-left { display:flex; gap:8px; align-items:center; }
+        .topbar-btn { background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.35); color:white; padding:6px 13px; border-radius:20px; font-size:12px; font-family:inherit; cursor:pointer; text-decoration:none; display:inline-block; }
+        .topbar-title { font-size:16px; font-weight:700; }
+        .topbar-sub   { font-size:12px; opacity:0.8; }
+
+        .content { max-width:800px; margin:0 auto; padding:20px 16px 60px; }
+
+        .card { background:white; border-radius:16px; padding:22px; box-shadow:0 2px 12px rgba(0,0,0,0.08); margin-bottom:16px; }
+        .card h2 { color:var(--red); font-size:16px; margin-bottom:16px; font-weight:700; }
+
+        .format-hint { background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:14px; font-size:13px; color:#0369a1; margin-bottom:16px; }
+        .format-hint strong { display:block; margin-bottom:6px; color:#0c4a6e; }
+        .col-list { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+        .col-tag { background:#0369a1; color:white; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+
+        .upload-zone { border:3px dashed #e0e0e0; border-radius:12px; padding:36px 20px; text-align:center; cursor:pointer; transition:all 0.2s; background:#fafafa; }
+        .upload-zone:hover, .upload-zone.drag { border-color:var(--red); background:#fff8f8; }
+        .upload-zone .icon { font-size:48px; margin-bottom:10px; }
+        .upload-zone p { color:var(--gray); font-size:14px; }
+        .upload-zone strong { color:var(--red); }
+        #fileInput { display:none; }
+
+        .stats-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px; }
+        .stat-box { background:white; border-radius:12px; padding:14px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+        .stat-num { font-size:28px; font-weight:800; color:var(--red); }
+        .stat-num.green  { color:var(--green); }
+        .stat-num.orange { color:var(--orange); }
+        .stat-num.purple { color:#7c3aed; }
+        .stat-lbl { font-size:11px; color:var(--gray); margin-top:2px; }
+
+        .progress-wrap { background:#e0e0e0; border-radius:10px; height:22px; overflow:hidden; margin:10px 0; }
+        .progress-bar  { height:100%; background:linear-gradient(90deg,var(--green),#20c997); transition:width 0.3s; display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:700; }
+
+        .table-wrap { overflow-x:auto; margin-top:16px; }
+        table { width:100%; border-collapse:collapse; font-size:13px; }
+        th { background:var(--red); color:white; padding:9px 12px; text-align:right; white-space:nowrap; }
+        td { padding:8px 12px; border-bottom:1px solid #f0f0f0; }
+        tr:hover td { background:#fff8f8; }
+        .s-pending { color:var(--gray); }
+        .s-sending { color:var(--orange); }
+        .s-ok      { color:var(--green); font-weight:700; }
+        .s-dup     { color:#7c3aed; font-weight:700; }
+        .s-err     { color:#dc2626; font-weight:700; }
+
+        .btn { padding:13px 20px; border:none; border-radius:10px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:opacity 0.2s; }
+        .btn:hover { opacity:0.9; }
+        .btn:disabled { opacity:0.4; cursor:not-allowed; }
+        .btn-primary { background:linear-gradient(135deg,var(--red-dark),var(--red-light)); color:white; width:100%; justify-content:center; }
+        .btn-gray    { background:var(--gray-light); color:#333; }
+        .btn-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+
+        .log-box { background:#1a1a1a; border-radius:10px; padding:14px; font-family:'Courier New',monospace; font-size:12px; max-height:180px; overflow-y:auto; margin-top:12px; }
+        .log-line { margin-bottom:4px; }
+        .log-ok  { color:#4ade80; }
+        .log-err { color:#f87171; }
+        .log-dup { color:#c084fc; }
+        .log-inf { color:#60a5fa; }
+
+        @media(max-width:500px) { .stats-bar { grid-template-columns:1fr 1fr; } }
+    </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="logo">❤️</div>
+        <h2>מאיר פנים</h2>
+        <p>ייבוא המוני - שליחת SMS לרשימה</p>
+        <div class="inp"><label>שם משתמש</label><input type="text" id="loginUser" placeholder="admin-main" autocomplete="username"></div>
+        <div class="inp"><label>סיסמה</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"></div>
+        <button class="login-btn" onclick="doLogin()">כניסה</button>
+        <div class="login-err" id="loginErr"></div>
+    </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp">
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="home.html" class="topbar-btn">🏠 דף הבית</a>
+            <a href="admin-firebase.html" class="topbar-btn">📊 לוח בקרה</a>
+            <button class="topbar-btn" onclick="doLogout()">יציאה</button>
+        </div>
+        <div style="text-align:right;">
+            <div class="topbar-title">📤 ייבוא המוני</div>
+            <div class="topbar-sub" id="topUser"></div>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <div class="format-hint">
+            <strong>📋 פורמט קובץ האקסל הנדרש - עמודות לפי הסדר:</strong>
+            <div class="col-list">
+                <span class="col-tag">סוג חבילה</span>
+                <span class="col-tag">מספר טלפון</span>
+                <span class="col-tag">שם מלא</span>
+                <span class="col-tag">מספר ת.ז</span>
+                <span class="col-tag">סניף</span>
+            </div>
+            <div style="margin-top:8px;font-size:12px;opacity:0.8;">השורה הראשונה = כותרות (מדולגת אוטומטית)</div>
+        </div>
+
+        <!-- Upload -->
+        <div class="card" id="uploadCard">
+            <h2>📤 העלאת קובץ אקסל</h2>
+            <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <div class="icon">📊</div>
+                <p><strong>לחץ לבחירת קובץ</strong> או גרור לכאן</p>
+                <p style="margin-top:6px;font-size:12px;">קבצי .xlsx / .xls</p>
+            </div>
+            <input type="file" id="fileInput" accept=".xlsx,.xls">
+        </div>
+
+        <!-- Preview -->
+        <div class="card" id="previewCard" style="display:none;">
+            <h2>👁️ תצוגה מקדימה — <span id="previewCount">0</span> רשומות</h2>
+
+            <div class="stats-bar">
+                <div class="stat-box"><div class="stat-num" id="sTotal">0</div><div class="stat-lbl">סה"כ</div></div>
+                <div class="stat-box"><div class="stat-num green" id="sOk">0</div><div class="stat-lbl">נשלחו ✅</div></div>
+                <div class="stat-box"><div class="stat-num orange" id="sErr">0</div><div class="stat-lbl">שגיאה ❌</div></div>
+                <div class="stat-box"><div class="stat-num purple" id="sDup">0</div><div class="stat-lbl">כפילות ⚠️</div></div>
+            </div>
+
+            <div class="progress-wrap" id="progressWrap" style="display:none;">
+                <div class="progress-bar" id="progressBar" style="width:0%">0%</div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>שם מלא</th>
+                            <th>טלפון</th>
+                            <th>ת.ז</th>
+                            <th>סוג חבילה</th>
+                            <th>סניף</th>
+                            <th>מס׳ הזמנה</th>
+                            <th>סטטוס</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewBody"></tbody>
+                </table>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-primary" id="sendAllBtn" onclick="sendAll()">🚀 שלח SMS לכולם</button>
+                <button class="btn btn-gray" onclick="resetAll()">↩️ חזרה</button>
+            </div>
+
+            <div class="log-box" id="logBox" style="display:none;"></div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const WORKER_URL = 'https://meir-panim-sms.sssnoy81.workers.dev/send';
+const firebaseConfig = {
+    apiKey: "AIzaSyAmaAzUatTV97LwL4VoVEUrJoVpnF612ig",
+    authDomain: "meir-panim-f27c4.firebaseapp.com",
+    projectId: "meir-panim-f27c4",
+    storageBucket: "meir-panim-f27c4.firebasestorage.app",
+    messagingSenderId: "252083260218",
+    appId: "1:252083260218:web:ea5e1e072aed819b8d1e03"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+const USERS = {
+    'super-admin':       { level:3, name:'מנהל על',            branch:null },
+    'admin-main':        { level:2, name:'אדמין ראשי',          branch:null },
+    'manager-jerusalem': { level:1, name:'מנהל סניף ירושלים',   branch:'ירושלים' },
+    'manager-tzfat':     { level:1, name:'מנהל סניף צפת',       branch:'צפת' },
+    'manager-dimona':    { level:1, name:'מנהל סניף דימונה',    branch:'דימונה' },
+    'manager-orakiva':   { level:1, name:'מנהל סניף אור עקיבא', branch:'אור עקיבא' },
+    'manager-tiberias':  { level:1, name:'מנהל סניף טבריה',     branch:'טבריה' }
+};
+const PASS = 'MeirPanim2025';
+
+let session = null;
+let rows = [];
+let sending = false;
+
+// ===== LOGIN =====
+window.doLogin = function() {
+    const u = document.getElementById('loginUser').value.trim().toLowerCase();
+    const p = document.getElementById('loginPass').value;
+    const errEl = document.getElementById('loginErr');
+    errEl.style.display = 'none';
+    if (!USERS[u] || p !== PASS) { errEl.textContent='שם משתמש או סיסמה שגויים'; errEl.style.display='block'; return; }
+    session = { username:u, ...USERS[u] };
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('topUser').textContent = session.name;
+};
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') window.doLogin(); });
+window.doLogout = function() {
+    session = null;
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+};
+
+// ===== DRAG & DROP =====
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag'); if(e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); });
+document.getElementById('fileInput').addEventListener('change', e => { if(e.target.files[0]) processFile(e.target.files[0]); });
+
+// ===== PARSE EXCEL =====
+// עמודות: סוג חבילה(0) | מספר טלפון(1) | שם מלא(2) | מספר ת.ז(3) | סניף(4)
+function processFile(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const wb = XLSX.read(e.target.result, { type:'array' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+
+            // Skip header row (row 0)
+            const dataRows = data.slice(1).filter(r => r.some(c => String(c).trim()));
+
+            rows = dataRows.map((r, i) => ({
+                index:     i + 1,
+                package:   String(r[0]||'').trim(),
+                phone:     String(r[1]||'').trim(),
+                fullName:  String(r[2]||'').trim(),
+                idNumber:  String(r[3]||'').trim(),
+                city:      String(r[4]||'').trim() || 'אור עקיבא',
+                orderId:   'MP' + (Date.now() + i).toString().slice(-8),
+                status:    'pending',
+                statusText:'⏳ ממתין'
+            })).filter(r => r.fullName || r.phone);
+
+            if (!rows.length) { alert('לא נמצאו רשומות בקובץ'); return; }
+
+            renderPreview();
+            document.getElementById('uploadCard').style.display = 'none';
+            document.getElementById('previewCard').style.display = 'block';
+
+        } catch(err) {
+            alert('שגיאה בקריאת הקובץ: ' + err.message);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+// ===== RENDER PREVIEW =====
+function renderPreview() {
+    document.getElementById('previewCount').textContent = rows.length;
+    document.getElementById('sTotal').textContent  = rows.length;
+    document.getElementById('sOk').textContent     = rows.filter(r=>r.status==='ok').length;
+    document.getElementById('sErr').textContent    = rows.filter(r=>r.status==='err').length;
+    document.getElementById('sDup').textContent    = rows.filter(r=>r.status==='dup').length;
+
+    document.getElementById('previewBody').innerHTML = rows.map(r => `
+        <tr id="row-${r.index}">
+            <td>${r.index}</td>
+            <td>${r.fullName}</td>
+            <td>${r.phone}</td>
+            <td>${r.idNumber}</td>
+            <td>${r.package}</td>
+            <td>${r.city}</td>
+            <td style="font-family:monospace;color:#8B1538;font-size:12px;">${r.orderId}</td>
+            <td class="s-${r.status}" id="status-${r.index}">${r.statusText}</td>
+        </tr>
+    `).join('');
+}
+
+// ===== SEND ALL =====
+window.sendAll = async function() {
+    if (sending) return;
+    const pending = rows.filter(r => r.status === 'pending');
+    if (!pending.length) { alert('אין רשומות לשליחה'); return; }
+    if (!confirm(`לשלוח SMS ל-${pending.length} לקוחות?\n\nהפעולה תרשום אותם במערכת ותשלח SMS לכל אחד.`)) return;
+
+    sending = true;
+    document.getElementById('sendAllBtn').disabled = true;
+    document.getElementById('sendAllBtn').textContent = '⏳ שולח...';
+    document.getElementById('progressWrap').style.display = 'block';
+    document.getElementById('logBox').style.display = 'block';
+
+    let done = 0;
+
+    for (const r of pending) {
+        updateStatus(r.index, 'sending', '📤 שולח...');
+        log(`📤 ${r.fullName} (${r.phone})...`, 'inf');
+
+        try {
+            // בדיקת כפילות ת.ז
+            if (r.idNumber) {
+                const snap = await getDocs(query(collection(db,'registrations'), where('idNumber','==',r.idNumber)));
+                if (!snap.empty) {
+                    updateStatus(r.index, 'dup', '⚠️ ת.ז קיימת');
+                    log(`⚠️ כפילות ת.ז: ${r.fullName}`, 'dup');
+                    r.status = 'dup'; r.statusText = '⚠️ ת.ז קיימת';
+                    done++; updateProgress(done, pending.length); continue;
+                }
+            }
+
+            // בדיקת כפילות טלפון
+            const normPhone = normalizePhone(r.phone);
+            if (normPhone) {
+                const snap2 = await getDocs(query(collection(db,'registrations'), where('phone','==',normPhone)));
+                if (!snap2.empty) {
+                    updateStatus(r.index, 'dup', '⚠️ טלפון קיים');
+                    log(`⚠️ כפילות טלפון: ${r.fullName}`, 'dup');
+                    r.status = 'dup'; r.statusText = '⚠️ טלפון קיים';
+                    done++; updateProgress(done, pending.length); continue;
+                }
+            }
+
+            // שמור ב-Firebase
+            await addDoc(collection(db,'registrations'), {
+                fullName:           r.fullName,
+                idNumber:           r.idNumber,
+                phone:              normPhone || r.phone,
+                city:               r.city,
+                packageType:        r.package,
+                notes:              '',
+                registrationDate:   serverTimestamp(),
+                registrationNumber: r.orderId,
+                registeredBy:       session.username + ' (bulk)',
+                packageReceived:    false,
+                receivedDate:       null
+            });
+
+            // שלח SMS
+            if (normPhone) {
+                const res = await fetch(WORKER_URL, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ phone:normPhone, name:r.fullName, orderId:r.orderId, city:r.city })
+                });
+                const result = await res.json();
+                if (!result.ok) throw new Error(result.error || 'SMS failed');
+            }
+
+            updateStatus(r.index, 'ok', '✅ נשלח');
+            log(`✅ ${r.fullName} → ${r.orderId}`, 'ok');
+            r.status = 'ok'; r.statusText = '✅ נשלח';
+
+        } catch(err) {
+            updateStatus(r.index, 'err', '❌ שגיאה');
+            log(`❌ ${r.fullName} - ${err.message}`, 'err');
+            r.status = 'err'; r.statusText = '❌ שגיאה';
+        }
+
+        done++;
+        updateProgress(done, pending.length);
+        await sleep(700);
+    }
+
+    // סיום
+    renderPreview();
+    sending = false;
+    document.getElementById('sendAllBtn').disabled = false;
+
+    const ok  = rows.filter(r=>r.status==='ok').length;
+    const dup = rows.filter(r=>r.status==='dup').length;
+    const err = rows.filter(r=>r.status==='err').length;
+
+    document.getElementById('sendAllBtn').textContent = '✅ הסתיים';
+    document.getElementById('sendAllBtn').style.background = '#16a34a';
+    log(`\n🏁 סיום! נשלחו: ${ok} | כפילויות: ${dup} | שגיאות: ${err}`, 'inf');
+};
+
+// ===== HELPERS =====
+function updateStatus(index, cls, text) {
+    const el = document.getElementById('status-'+index);
+    if (el) { el.className='s-'+cls; el.textContent=text; }
+}
+
+function updateProgress(done, total) {
+    const pct = Math.round((done/total)*100);
+    const bar = document.getElementById('progressBar');
+    bar.style.width = pct+'%';
+    bar.textContent = pct+'%';
+}
+
+function log(msg, type='inf') {
+    const box = document.getElementById('logBox');
+    const line = document.createElement('div');
+    line.className='log-line log-'+type;
+    line.textContent=msg;
+    box.appendChild(line);
+    box.scrollTop=box.scrollHeight;
+}
+
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+
+function normalizePhone(phone) {
+    if (!phone) return null;
+    let p = String(phone).replace(/\D/g,'');
+    if (p.startsWith('972') && p.length===12) p='0'+p.slice(3);
+    else if (p.startsWith('0') && p.length===10) { /* ok */ }
+    else if (p.startsWith('5') && p.length===9) p='0'+p;
+    else return null;
+    return p.length===10 ? p : null;
+}
+
+window.resetAll = function() {
+    rows=[]; sending=false;
+    document.getElementById('fileInput').value='';
+    document.getElementById('previewCard').style.display='none';
+    document.getElementById('uploadCard').style.display='block';
+    document.getElementById('logBox').innerHTML='';
+    document.getElementById('progressWrap').style.display='none';
+    const btn=document.getElementById('sendAllBtn');
+    btn.disabled=false; btn.textContent='🚀 שלח SMS לכולם'; btn.style.background='';
+};
+</script>
+</body>
+</html>
